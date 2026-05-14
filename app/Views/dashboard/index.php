@@ -12,11 +12,7 @@ $ehMesAtual  = ($mes == date('n') && $ano == date('Y'));
         <h2 style="font-size:1.1rem;font-weight:600;min-width:160px;text-align:center;">
             <?= nomeMesAno($mes, $ano) ?>
         </h2>
-        <?php if (!$ehMesAtual): ?>
-            <a href="/dashboard?mes=<?= $mesProximo['mes'] ?>&ano=<?= $mesProximo['ano'] ?>" class="btn btn-secondary btn-sm">›</a>
-        <?php else: ?>
-            <span class="btn btn-secondary btn-sm" style="opacity:.3;cursor:default;">›</span>
-        <?php endif; ?>
+        <a href="/dashboard?mes=<?= $mesProximo['mes'] ?>&ano=<?= $mesProximo['ano'] ?>" class="btn btn-secondary btn-sm">›</a>
     </div>
     <?php if (!$ehMesAtual): ?>
         <a href="/dashboard" class="btn btn-outline btn-sm">Hoje</a>
