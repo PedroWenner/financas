@@ -64,10 +64,11 @@ RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
 
 # ── PHP: configuracoes extras ───────────────────────────────
-<IfModule mod_php.c>
-    php_flag display_errors Off
-    php_value upload_max_filesize 10M
-    php_value post_max_size 12M
-    php_value max_execution_time 60
-    php_value memory_limit 256M
-</IfModule>
+# Hostinger usa PHP-FPM/LiteSpeed — php_flag/php_value nao funcionam aqui.
+# As configuracoes PHP ficam em .user.ini na raiz do public_html:
+#
+#   display_errors = Off
+#   upload_max_filesize = 10M
+#   post_max_size = 12M
+#   max_execution_time = 60
+#   memory_limit = 256M

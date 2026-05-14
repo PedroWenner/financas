@@ -14,7 +14,7 @@ declare(strict_types=1);
 define('APP_NAME',    'AlcatechFinanças');
 define('APP_VERSION', '1.0.0');
 define('APP_ENV',     'production');
-define('APP_URL',     'https://seudominio.com.br');  // ← EDITE AQUI
+define('APP_URL',     'https://financa.alcati.com.br');
 
 // ──────────────────────────────────────────────
 // Erros — NUNCA exibir em producao
