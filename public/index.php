@@ -11,6 +11,10 @@ define('BASE_PATH', dirname(__DIR__));
 define('APP_PATH',  BASE_PATH . '/app');
 define('CORE_PATH', BASE_PATH . '/core');
 
+// Carrega variáveis de ambiente antes de qualquer config
+require_once CORE_PATH . '/Env.php';
+loadEnv(BASE_PATH . '/.env');
+
 // Carrega configurações e autoloader
 require_once BASE_PATH . '/config/config.php';
 require_once BASE_PATH . '/config/database.php';

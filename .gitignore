@@ -1,6 +1,9 @@
+# Variaveis de ambiente (com senhas reais)
+.env.local
+publish/config/.env.producao
+
 # Configuração local (com senhas reais)
 config/database.local.php
-.env
 
 # Dependências (caso use Composer no futuro)
 vendor/
