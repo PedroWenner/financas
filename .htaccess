@@ -1,0 +1,73 @@
+# ============================================================
+# AlcatechFinancas — .htaccess para Hostinger (LiteSpeed)
+# ============================================================
+
+Options -Indexes
+RewriteEngine On
+
+# ── Forcar HTTPS ────────────────────────────────────────────
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ── Redirecionar www para sem-www (ou vice-versa) ───────────
+# Escolha UM dos blocos abaixo (comente o outro):
+
+# SEM www → COM www:
+# RewriteCond %{HTTP_HOST} !^www\. [NC]
+# RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [L,R=301]
+
+# COM www → SEM www (recomendado):
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [L,R=301]
+
+# ── Front Controller ─────────────────────────────────────────
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# ── Cabecalhos de Seguranca ──────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options    "nosniff"
+    Header always set X-Frame-Options           "SAMEORIGIN"
+    Header always set X-XSS-Protection          "1; mode=block"
+    Header always set Referrer-Policy           "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy        "geolocation=(), microphone=(), camera=()"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+    # Cache de assets estaticos
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|woff2?)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+
+    # Sem cache para PHP
+    <FilesMatch "\.php$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+# ── Compressao GZIP ─────────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ── Proteger arquivos sensiveis ──────────────────────────────
+<FilesMatch "\.(sql|log|env|md|gitignore)$">
+    Require all denied
+</FilesMatch>
+
+# Bloquear acesso direto a pastas sensiveis (Opcao B)
+<IfModule mod_rewrite.c>
+    RewriteRule ^(app|config|core|migrations)(/.*)?$ - [F,L]
+</IfModule>
+
+# ── PHP: configuracoes extras ───────────────────────────────
+# Hostinger usa PHP-FPM/LiteSpeed — php_flag/php_value nao funcionam aqui.
+# Coloque as configuracoes PHP em um arquivo .user.ini na raiz do site:
+#
+#   display_errors = Off
+#   upload_max_filesize = 10M
+#   post_max_size = 12M
+#   max_execution_time = 60
+#   memory_limit = 256M
