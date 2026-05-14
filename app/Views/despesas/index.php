@@ -10,11 +10,7 @@ $baseUrl     = '/despesas';
     <div class="d-flex align-center gap-1">
         <a href="<?= $baseUrl ?>?mes=<?= $mesAnterior['mes'] ?>&ano=<?= $mesAnterior['ano'] ?>" class="btn btn-secondary btn-sm">‹</a>
         <span style="font-weight:600;min-width:150px;text-align:center;"><?= nomeMesAno($mes, $ano) ?></span>
-        <?php if (!$ehAtual): ?>
-            <a href="<?= $baseUrl ?>?mes=<?= $mesProximo['mes'] ?>&ano=<?= $mesProximo['ano'] ?>" class="btn btn-secondary btn-sm">›</a>
-        <?php else: ?>
-            <span class="btn btn-secondary btn-sm" style="opacity:.3;cursor:default;">›</span>
-        <?php endif; ?>
+        <a href="<?= $baseUrl ?>?mes=<?= $mesProximo['mes'] ?>&ano=<?= $mesProximo['ano'] ?>" class="btn btn-secondary btn-sm">›</a>
         <?php if (!$ehAtual): ?>
             <a href="<?= $baseUrl ?>" class="btn btn-outline btn-sm">Hoje</a>
         <?php endif; ?>
