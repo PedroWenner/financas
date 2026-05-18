@@ -69,76 +69,81 @@ class DashboardController
 
     private function totalDespesas(int $uid, int $ano, int $mes): float
     {
-        $anoMes = sprintf('%04d-%02d', $ano, $mes);
-        $stmt   = $this->db->prepare(
+        $stmt = $this->db->prepare(
             "SELECT COALESCE(SUM(d.valor), 0)
              FROM despesas d
              LEFT JOIN cartoes c ON c.id = d.cartao_id
              WHERE d.usuario_id = :uid
-               AND DATE_FORMAT(
-                   CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                        ELSE d.data
-                   END, '%Y-%m') = :ano_mes"
+               AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                             ELSE d.data
+                        END) = :ano
+               AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                              ELSE d.data
+                         END) = :mes"
         );
-        $stmt->execute([':uid' => $uid, ':ano_mes' => $anoMes]);
+        $stmt->execute([':uid' => $uid, ':ano' => $ano, ':mes' => $mes]);
         return (float) $stmt->fetchColumn();
     }
 
     private function despesasPorCategoria(int $uid, int $ano, int $mes): array
     {
-        $anoMes = sprintf('%04d-%02d', $ano, $mes);
-        $stmt   = $this->db->prepare(
+        $stmt = $this->db->prepare(
             "SELECT cat.nome, cat.cor, COALESCE(SUM(d.valor), 0) AS total
              FROM despesas d
              LEFT JOIN categorias cat ON cat.id = d.categoria_id
              LEFT JOIN cartoes    c   ON c.id   = d.cartao_id
              WHERE d.usuario_id = :uid
-               AND DATE_FORMAT(
-                   CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                        ELSE d.data
-                   END, '%Y-%m') = :ano_mes
+               AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                             ELSE d.data
+                        END) = :ano
+               AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                              ELSE d.data
+                         END) = :mes
              GROUP BY d.categoria_id, cat.nome, cat.cor
              ORDER BY total DESC
              LIMIT 10"
         );
-        $stmt->execute([':uid' => $uid, ':ano_mes' => $anoMes]);
+        $stmt->execute([':uid' => $uid, ':ano' => $ano, ':mes' => $mes]);
         return $stmt->fetchAll();
     }
 
     private function despesasPorCartao(int $uid, int $ano, int $mes): array
     {
-        $anoMes = sprintf('%04d-%02d', $ano, $mes);
-        $stmt   = $this->db->prepare(
+        $stmt = $this->db->prepare(
             "SELECT c.nome, c.cor, c.limite,
                     COALESCE(SUM(d.valor), 0) AS total_gasto,
                     c.limite - COALESCE(SUM(d.valor), 0) AS limite_disponivel
              FROM cartoes c
              LEFT JOIN despesas d
                 ON d.cartao_id = c.id
-                AND DATE_FORMAT(
-                    CASE WHEN DAY(d.data) >= c.dia_fechamento
-                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                         ELSE d.data
-                    END, '%Y-%m') = :ano_mes
+                AND YEAR(CASE WHEN DAY(d.data) >= c.dia_fechamento
+                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                              ELSE d.data
+                         END) = :ano
+                AND MONTH(CASE WHEN DAY(d.data) >= c.dia_fechamento
+                               THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                               ELSE d.data
+                          END) = :mes
              WHERE c.usuario_id = :uid AND c.ativo = 1
              GROUP BY c.id, c.nome, c.cor, c.limite
              ORDER BY total_gasto DESC"
         );
-        $stmt->execute([':uid' => $uid, ':ano_mes' => $anoMes]);
+        $stmt->execute([':uid' => $uid, ':ano' => $ano, ':mes' => $mes]);
         return $stmt->fetchAll();
     }
 
     private function ultimosLancamentos(int $uid, int $ano, int $mes): array
     {
-        $anoMes = sprintf('%04d-%02d', $ano, $mes);
-        $stmt   = $this->db->prepare(
+        $stmt = $this->db->prepare(
             "SELECT 'receita' AS tipo_lancamento, r.descricao, r.valor, r.data,
                     cat.nome AS categoria, cat.cor AS categoria_cor
              FROM receitas r
              LEFT JOIN categorias cat ON cat.id = r.categoria_id
-             WHERE r.usuario_id = :uid AND DATE_FORMAT(r.data, '%Y-%m') = :ano_mes
+             WHERE r.usuario_id = :uid AND YEAR(r.data) = :ano AND MONTH(r.data) = :mes
 
              UNION ALL
 
@@ -148,18 +153,21 @@ class DashboardController
              LEFT JOIN categorias cat2 ON cat2.id = d.categoria_id
              LEFT JOIN cartoes    c    ON c.id    = d.cartao_id
              WHERE d.usuario_id = :uid2
-               AND DATE_FORMAT(
-                   CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                        ELSE d.data
-                   END, '%Y-%m') = :ano_mes2
+               AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                             ELSE d.data
+                        END) = :ano2
+               AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                              ELSE d.data
+                         END) = :mes2
 
              ORDER BY data DESC
              LIMIT 10"
         );
         $stmt->execute([
-            ':uid'     => $uid, ':ano_mes'  => $anoMes,
-            ':uid2'    => $uid, ':ano_mes2' => $anoMes,
+            ':uid'  => $uid, ':ano'  => $ano,  ':mes'  => $mes,
+            ':uid2' => $uid, ':ano2' => $ano,  ':mes2' => $mes,
         ]);
         return $stmt->fetchAll();
     }
@@ -199,19 +207,21 @@ class DashboardController
             $stmtR->execute([':uid'=>$uid,':a'=>$a,':m'=>$m]);
             $receitas = (float)$stmtR->fetchColumn();
 
-            $anoMesRef = sprintf('%04d-%02d', $a, $m);
             $stmtD = $this->db->prepare(
                 "SELECT COALESCE(SUM(d.valor),0)
                  FROM despesas d
                  LEFT JOIN cartoes c ON c.id = d.cartao_id
                  WHERE d.usuario_id = :uid
-                   AND DATE_FORMAT(
-                       CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                            ELSE d.data
-                       END, '%Y-%m') = :ano_mes"
+                   AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                                 THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                                 ELSE d.data
+                            END) = :ano
+                   AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                                  THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                                  ELSE d.data
+                             END) = :mes"
             );
-            $stmtD->execute([':uid' => $uid, ':ano_mes' => $anoMesRef]);
+            $stmtD->execute([':uid' => $uid, ':ano' => $a, ':mes' => $m]);
             $despesas = (float)$stmtD->fetchColumn();
 
             $resultado[] = [

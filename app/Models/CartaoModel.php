@@ -14,7 +14,6 @@ class CartaoModel extends BaseModel
      */
     public function listarComGastos(int $usuarioId, int $ano, int $mes): array
     {
-        $anoMes = sprintf('%04d-%02d', $ano, $mes);
         $stmt   = $this->db->prepare("
             SELECT
                 c.*,
@@ -26,16 +25,19 @@ class CartaoModel extends BaseModel
             FROM cartoes c
             LEFT JOIN despesas d
                 ON d.cartao_id = c.id
-                AND DATE_FORMAT(
-                    CASE WHEN DAY(d.data) >= c.dia_fechamento
-                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                         ELSE d.data
-                    END, '%Y-%m') = :ano_mes
+                AND YEAR(CASE WHEN DAY(d.data) >= c.dia_fechamento
+                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                              ELSE d.data
+                         END) = :ano
+                AND MONTH(CASE WHEN DAY(d.data) >= c.dia_fechamento
+                               THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                               ELSE d.data
+                          END) = :mes
             WHERE c.usuario_id = :uid AND c.ativo = 1
             GROUP BY c.id
             ORDER BY c.nome ASC
         ");
-        $stmt->execute([':uid' => $usuarioId, ':ano_mes' => $anoMes]);
+        $stmt->execute([':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes]);
         return $stmt->fetchAll();
     }
 
@@ -123,7 +125,6 @@ class CartaoModel extends BaseModel
      */
     public function getFatura(int $cartaoId, int $usuarioId, int $ano, int $mes): array
     {
-        $anoMes = sprintf('%04d-%02d', $ano, $mes);
         $stmt   = $this->db->prepare("
             SELECT d.*, cat.nome AS categoria_nome, cat.cor AS categoria_cor
             FROM despesas d
@@ -131,14 +132,17 @@ class CartaoModel extends BaseModel
             JOIN  cartoes       c   ON c.id   = d.cartao_id
             WHERE d.cartao_id = :cid
               AND d.usuario_id = :uid
-              AND DATE_FORMAT(
-                  CASE WHEN DAY(d.data) >= c.dia_fechamento
-                       THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                       ELSE d.data
-                  END, '%Y-%m') = :ano_mes
+              AND YEAR(CASE WHEN DAY(d.data) >= c.dia_fechamento
+                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                            ELSE d.data
+                       END) = :ano
+              AND MONTH(CASE WHEN DAY(d.data) >= c.dia_fechamento
+                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                             ELSE d.data
+                        END) = :mes
             ORDER BY d.data DESC
         ");
-        $stmt->execute([':cid' => $cartaoId, ':uid' => $usuarioId, ':ano_mes' => $anoMes]);
+        $stmt->execute([':cid' => $cartaoId, ':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes]);
         return $stmt->fetchAll();
     }
 
