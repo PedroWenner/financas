@@ -11,9 +11,22 @@ define('BASE_PATH', dirname(__DIR__));
 define('APP_PATH',  BASE_PATH . '/app');
 define('CORE_PATH', BASE_PATH . '/core');
 
-// Carrega variáveis de ambiente antes de qualquer config
-require_once CORE_PATH . '/Env.php';
-loadEnv(BASE_PATH . '/.env');
+// Carrega variáveis do .env se o arquivo existir
+(static function (): void {
+    $envFile = BASE_PATH . '/.env';
+    if (!is_file($envFile)) return;
+
+    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $linha) {
+        if (str_starts_with(trim($linha), '#')) continue;
+        if (!str_contains($linha, '=')) continue;
+        [$chave, $valor] = explode('=', $linha, 2);
+        $chave = trim($chave);
+        $valor = trim($valor);
+        if ($chave !== '' && getenv($chave) === false) {
+            putenv("{$chave}={$valor}");
+        }
+    }
+})();
 
 // Carrega configurações e autoloader
 require_once BASE_PATH . '/config/config.php';

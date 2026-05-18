@@ -14,7 +14,8 @@ class CartaoModel extends BaseModel
      */
     public function listarComGastos(int $usuarioId, int $ano, int $mes): array
     {
-        $stmt = $this->db->prepare("
+        $anoMes = sprintf('%04d-%02d', $ano, $mes);
+        $stmt   = $this->db->prepare("
             SELECT
                 c.*,
                 COALESCE(SUM(d.valor), 0) AS total_gasto,
@@ -25,13 +26,16 @@ class CartaoModel extends BaseModel
             FROM cartoes c
             LEFT JOIN despesas d
                 ON d.cartao_id = c.id
-                AND YEAR(d.data) = :ano
-                AND MONTH(d.data) = :mes
+                AND DATE_FORMAT(
+                    CASE WHEN DAY(d.data) >= c.dia_fechamento
+                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                         ELSE d.data
+                    END, '%Y-%m') = :ano_mes
             WHERE c.usuario_id = :uid AND c.ativo = 1
             GROUP BY c.id
             ORDER BY c.nome ASC
         ");
-        $stmt->execute([':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes]);
+        $stmt->execute([':uid' => $usuarioId, ':ano_mes' => $anoMes]);
         return $stmt->fetchAll();
     }
 
@@ -119,17 +123,22 @@ class CartaoModel extends BaseModel
      */
     public function getFatura(int $cartaoId, int $usuarioId, int $ano, int $mes): array
     {
-        $stmt = $this->db->prepare("
-            SELECT d.*, c.nome AS categoria_nome, c.cor AS categoria_cor
+        $anoMes = sprintf('%04d-%02d', $ano, $mes);
+        $stmt   = $this->db->prepare("
+            SELECT d.*, cat.nome AS categoria_nome, cat.cor AS categoria_cor
             FROM despesas d
-            LEFT JOIN categorias c ON c.id = d.categoria_id
+            LEFT JOIN categorias cat ON cat.id = d.categoria_id
+            JOIN  cartoes       c   ON c.id   = d.cartao_id
             WHERE d.cartao_id = :cid
               AND d.usuario_id = :uid
-              AND YEAR(d.data) = :ano
-              AND MONTH(d.data) = :mes
+              AND DATE_FORMAT(
+                  CASE WHEN DAY(d.data) >= c.dia_fechamento
+                       THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                       ELSE d.data
+                  END, '%Y-%m') = :ano_mes
             ORDER BY d.data DESC
         ");
-        $stmt->execute([':cid' => $cartaoId, ':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes]);
+        $stmt->execute([':cid' => $cartaoId, ':uid' => $usuarioId, ':ano_mes' => $anoMes]);
         return $stmt->fetchAll();
     }
 
@@ -149,11 +158,11 @@ class CartaoModel extends BaseModel
         $diaFechamento = (int) $c['dia_fechamento'];
         $diaVencimento = (int) $c['dia_vencimento'];
 
-        // Se comprou antes do fechamento → vence no mês seguinte
-        // Se comprou no/após fechamento → vence em dois meses
+        // Se comprou antes do fechamento → fatura do mês atual → vence neste mês
+        // Se comprou no/após fechamento → fatura do próximo mês → vence no mês seguinte
         $refMes = $diaCompra < $diaFechamento
-            ? $compra->modify('first day of next month')
-            : $compra->modify('first day of +2 months');
+            ? $compra
+            : $compra->modify('first day of next month');
 
         // Limita ao último dia do mês de vencimento
         $ultimoDia = (int) $refMes->format('t');

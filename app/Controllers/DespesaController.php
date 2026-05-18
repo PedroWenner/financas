@@ -94,8 +94,8 @@ class DespesaController
         }
 
         $this->model->criar($uid, $dados);
-        $data = $dados['data'] ?: date('Y-m-d');
-        $url  = '/despesas?mes=' . (int)date('n', strtotime($data)) . '&ano=' . (int)date('Y', strtotime($data));
+        ['mes' => $mes, 'ano' => $ano] = $this->mesFatura($dados, $uid);
+        $url = '/despesas?mes=' . $mes . '&ano=' . $ano;
         Response::redirectWith($url, 'success', 'Despesa cadastrada com sucesso!');
     }
 
@@ -139,9 +139,9 @@ class DespesaController
             return;
         }
 
-        $ok  = $this->model->atualizar($id, $uid, $dados);
-        $data = $dados['data'] ?: date('Y-m-d');
-        $url  = '/despesas?mes=' . (int)date('n', strtotime($data)) . '&ano=' . (int)date('Y', strtotime($data));
+        $ok = $this->model->atualizar($id, $uid, $dados);
+        ['mes' => $mes, 'ano' => $ano] = $this->mesFatura($dados, $uid);
+        $url = '/despesas?mes=' . $mes . '&ano=' . $ano;
         Response::redirectWith($url, $ok ? 'success' : 'info', $ok ? 'Despesa atualizada!' : 'Nenhuma alteração.');
     }
 
@@ -172,6 +172,29 @@ class DespesaController
     // ──────────────────────────────────────────────
     // Privados
     // ──────────────────────────────────────────────
+
+    /** Retorna o mês/ano da fatura do cartão para a data da despesa. */
+    private function mesFatura(array $dados, int $uid): array
+    {
+        $data = $dados['data'] ?: date('Y-m-d');
+        $mes  = (int) date('n', strtotime($data));
+        $ano  = (int) date('Y', strtotime($data));
+
+        if (!empty($dados['cartao_id'])) {
+            $cartao = $this->cartoes->buscarPorId((int) $dados['cartao_id'], $uid);
+            if ($cartao) {
+                $diaFechamento = (int) $cartao['dia_fechamento'];
+                $diaCompra     = (int) date('j', strtotime($data));
+                if ($diaCompra >= $diaFechamento) {
+                    $faturaDate = (new DateTimeImmutable($data))->modify('first day of next month');
+                    $mes = (int) $faturaDate->format('n');
+                    $ano = (int) $faturaDate->format('Y');
+                }
+            }
+        }
+
+        return ['mes' => $mes, 'ano' => $ano];
+    }
 
     private function extrairDados(): array
     {

@@ -163,7 +163,7 @@ function formatDataBR(dateStr) {
     return `${d}/${m}/${y}`;
 }
 
-// Calcula data da primeira parcela client-side (espelha a lógica PHP)
+// Calcula data da primeira parcela client-side — espelha CartaoModel::calcularDataPrimeiraParcela
 function calcularPrimeiraParcela(dataCompra, cartaoSelect) {
     if (!dataCompra) return null;
     const override = document.getElementById('data_primeira_parcela').value;
@@ -182,8 +182,8 @@ function calcularPrimeiraParcela(dataCompra, cartaoSelect) {
         return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-01`;
     }
 
-    // Com cartão: se diaCompra < diaFechamento → mês seguinte; senão → dois meses
-    const refMes = diaCompra < diaFechamento ? new Date(y, m, 1) : new Date(y, m + 1, 1);
+    // Com cartão: se diaCompra < diaFechamento → mesmo mês; senão → mês seguinte
+    const refMes = diaCompra < diaFechamento ? new Date(y, m - 1, 1) : new Date(y, m, 1);
     const diasRefMes = new Date(refMes.getFullYear(), refMes.getMonth() + 1, 0).getDate();
     const dia = Math.min(diaVencimento, diasRefMes);
     return `${refMes.getFullYear()}-${String(refMes.getMonth()+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
