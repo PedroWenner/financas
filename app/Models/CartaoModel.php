@@ -25,11 +25,11 @@ class CartaoModel extends BaseModel
             FROM cartoes c
             LEFT JOIN despesas d
                 ON d.cartao_id = c.id
-                AND YEAR(CASE WHEN DAY(d.data) >= c.dia_fechamento
+                AND YEAR(CASE WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
                               THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                               ELSE d.data
                          END) = :ano
-                AND MONTH(CASE WHEN DAY(d.data) >= c.dia_fechamento
+                AND MONTH(CASE WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
                                THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                                ELSE d.data
                           END) = :mes
@@ -132,11 +132,11 @@ class CartaoModel extends BaseModel
             JOIN  cartoes       c   ON c.id   = d.cartao_id
             WHERE d.cartao_id = :cid
               AND d.usuario_id = :uid
-              AND YEAR(CASE WHEN DAY(d.data) >= c.dia_fechamento
+              AND YEAR(CASE WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                             ELSE d.data
                        END) = :ano
-              AND MONTH(CASE WHEN DAY(d.data) >= c.dia_fechamento
+              AND MONTH(CASE WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                              ELSE d.data
                         END) = :mes

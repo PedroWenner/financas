@@ -25,11 +25,11 @@ class DespesaModel extends BaseModel
     ): array {
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
         $where  = "d.usuario_id = :uid
-            AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+            AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                           THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                           ELSE d.data
                      END) = :ano
-            AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+            AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                            ELSE d.data
                       END) = :mes";
@@ -77,11 +77,11 @@ class DespesaModel extends BaseModel
     public function contar(int $usuarioId, int $ano, int $mes, ?string $tipo = null): int
     {
         $where  = "d.usuario_id = :uid
-            AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+            AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                           THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                           ELSE d.data
                      END) = :ano
-            AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+            AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                            ELSE d.data
                       END) = :mes";
@@ -107,16 +107,16 @@ class DespesaModel extends BaseModel
      */
     public function totalMes(int $usuarioId, int $ano, int $mes): float
     {
-        $stmt   = $this->db->prepare("
+        $stmt = $this->db->prepare("
             SELECT COALESCE(SUM(d.valor), 0)
             FROM despesas d
             LEFT JOIN cartoes c ON c.id = d.cartao_id
             WHERE d.usuario_id = :uid
-              AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+              AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                             ELSE d.data
                        END) = :ano
-              AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+              AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                              ELSE d.data
                         END) = :mes
@@ -130,16 +130,16 @@ class DespesaModel extends BaseModel
      */
     public function totalPorTipo(int $usuarioId, int $ano, int $mes): array
     {
-        $stmt   = $this->db->prepare("
+        $stmt = $this->db->prepare("
             SELECT d.tipo, COALESCE(SUM(d.valor), 0) AS total
             FROM despesas d
             LEFT JOIN cartoes c ON c.id = d.cartao_id
             WHERE d.usuario_id = :uid
-              AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+              AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                             ELSE d.data
                        END) = :ano
-              AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+              AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                              ELSE d.data
                         END) = :mes
@@ -270,7 +270,7 @@ class DespesaModel extends BaseModel
      */
     public function porCategoria(int $usuarioId, int $ano, int $mes): array
     {
-        $stmt   = $this->db->prepare("
+        $stmt = $this->db->prepare("
             SELECT
                 COALESCE(cat.nome, 'Sem categoria') AS nome,
                 COALESCE(cat.cor,  '#6c757d')       AS cor,
@@ -279,11 +279,11 @@ class DespesaModel extends BaseModel
             LEFT JOIN categorias cat ON cat.id = d.categoria_id
             LEFT JOIN cartoes    c   ON c.id   = d.cartao_id
             WHERE d.usuario_id = :uid
-              AND YEAR(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+              AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                             ELSE d.data
                        END) = :ano
-              AND MONTH(CASE WHEN d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+              AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                              ELSE d.data
                         END) = :mes
