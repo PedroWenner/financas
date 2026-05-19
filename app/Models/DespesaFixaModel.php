@@ -117,25 +117,28 @@ class DespesaFixaModel extends BaseModel
         $primeiroDia = sprintf('%04d-%02d-01', $ano, $mes);
         $ultimoDia   = date('Y-m-t', strtotime($primeiroDia));
 
-        // Verifica se já foram gerados
-        $stmtCheck = $this->db->prepare("
-            SELECT COUNT(*) FROM despesas
-            WHERE usuario_id = :uid
-              AND despesa_fixa_id IS NOT NULL
-              AND YEAR(data) = :ano AND MONTH(data) = :mes
-        ");
-        $stmtCheck->execute([':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes]);
-        if ((int) $stmtCheck->fetchColumn() > 0) return 0;
-
-        // Busca templates válidos para o período
+        // Busca apenas templates que ainda não foram gerados neste mês
         $stmtTpl = $this->db->prepare("
             SELECT * FROM despesas_fixas
             WHERE usuario_id = :uid
               AND ativo = 1
               AND data_inicio <= :ultimo
               AND (data_fim IS NULL OR data_fim >= :primeiro)
+              AND NOT EXISTS (
+                  SELECT 1 FROM despesas d2
+                  WHERE d2.usuario_id = :uid2
+                    AND d2.despesa_fixa_id = despesas_fixas.id
+                    AND YEAR(d2.data) = :ano AND MONTH(d2.data) = :mes
+              )
         ");
-        $stmtTpl->execute([':uid' => $usuarioId, ':primeiro' => $primeiroDia, ':ultimo' => $ultimoDia]);
+        $stmtTpl->execute([
+            ':uid'      => $usuarioId,
+            ':uid2'     => $usuarioId,
+            ':primeiro' => $primeiroDia,
+            ':ultimo'   => $ultimoDia,
+            ':ano'      => $ano,
+            ':mes'      => $mes,
+        ]);
         $templates = $stmtTpl->fetchAll();
 
         if (empty($templates)) return 0;

@@ -30,6 +30,8 @@ class DespesaController
         $mes = max(1, min(12, $mes));
         $ano = max(2000, min(2100, $ano));
 
+        (new DespesaFixaModel())->gerarLancamentos($uid, $ano, $mes);
+
         $catFiltro    = Request::getInt('cat', 0);
         $tipoFiltro   = Request::getString('tipo');
         $cartaoFiltro = Request::getInt('cartao', 0);

@@ -265,26 +265,30 @@ class DashboardController
 
     private function gerarRecorrenciasMes(int $uid, int $ano, int $mes): void
     {
-        // Verifica se já existem lançamentos recorrentes neste mês
-        $stmt = $this->db->prepare(
-            "SELECT COUNT(*) FROM despesas
-             WHERE usuario_id = :uid
-               AND despesa_fixa_id IS NOT NULL
-               AND YEAR(data) = :ano AND MONTH(data) = :mes"
-        );
-        $stmt->execute([':uid' => $uid, ':ano' => $ano, ':mes' => $mes]);
-        if ((int)$stmt->fetchColumn() > 0) return;
-
         $primeiroDia = sprintf('%04d-%02d-01', $ano, $mes);
         $ultimoDia   = date('Y-m-t', strtotime($primeiroDia));
 
+        // Busca apenas templates que ainda não foram gerados neste mês
         $stmt = $this->db->prepare(
             "SELECT * FROM despesas_fixas
              WHERE usuario_id = :uid AND ativo = 1
                AND data_inicio <= :ultimo
-               AND (data_fim IS NULL OR data_fim >= :primeiro)"
+               AND (data_fim IS NULL OR data_fim >= :primeiro)
+               AND NOT EXISTS (
+                   SELECT 1 FROM despesas d2
+                   WHERE d2.usuario_id = :uid2
+                     AND d2.despesa_fixa_id = despesas_fixas.id
+                     AND YEAR(d2.data) = :ano AND MONTH(d2.data) = :mes
+               )"
         );
-        $stmt->execute([':uid' => $uid, ':ultimo' => $ultimoDia, ':primeiro' => $primeiroDia]);
+        $stmt->execute([
+            ':uid'      => $uid,
+            ':uid2'     => $uid,
+            ':primeiro' => $primeiroDia,
+            ':ultimo'   => $ultimoDia,
+            ':ano'      => $ano,
+            ':mes'      => $mes,
+        ]);
         $templates = $stmt->fetchAll();
 
         if (empty($templates)) return;
