@@ -1,4 +1,5 @@
 <?php
+
 /**
  * DashboardController — Painel principal com resumo financeiro.
  */
@@ -74,11 +75,17 @@ class DashboardController
              FROM despesas d
              LEFT JOIN cartoes c ON c.id = d.cartao_id
              WHERE d.usuario_id = :uid
-               AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+               AND YEAR(CASE
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                              ELSE d.data
                         END) = :ano
-               AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+               AND MONTH(CASE 
+               WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                               THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                               ELSE d.data
                          END) = :mes"
@@ -95,11 +102,17 @@ class DashboardController
              LEFT JOIN categorias cat ON cat.id = d.categoria_id
              LEFT JOIN cartoes    c   ON c.id   = d.cartao_id
              WHERE d.usuario_id = :uid
-               AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+               AND YEAR(CASE 
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                              ELSE d.data
                         END) = :ano
-               AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+               AND MONTH(CASE 
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                               THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                               ELSE d.data
                          END) = :mes
@@ -153,11 +166,17 @@ class DashboardController
              LEFT JOIN categorias cat2 ON cat2.id = d.categoria_id
              LEFT JOIN cartoes    c    ON c.id    = d.cartao_id
              WHERE d.usuario_id = :uid2
-               AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+               AND YEAR(CASE 
+               WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+               WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                              ELSE d.data
                         END) = :ano2
-               AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+               AND MONTH(CASE 
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                               THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                               ELSE d.data
                          END) = :mes2
@@ -166,8 +185,12 @@ class DashboardController
              LIMIT 10"
         );
         $stmt->execute([
-            ':uid'  => $uid, ':ano'  => $ano,  ':mes'  => $mes,
-            ':uid2' => $uid, ':ano2' => $ano,  ':mes2' => $mes,
+            ':uid'  => $uid,
+            ':ano'  => $ano,
+            ':mes'  => $mes,
+            ':uid2' => $uid,
+            ':ano2' => $ano,
+            ':mes2' => $mes,
         ]);
         return $stmt->fetchAll();
     }
@@ -204,7 +227,7 @@ class DashboardController
                 "SELECT COALESCE(SUM(valor),0) FROM receitas
                  WHERE usuario_id=:uid AND YEAR(data)=:a AND MONTH(data)=:m"
             );
-            $stmtR->execute([':uid'=>$uid,':a'=>$a,':m'=>$m]);
+            $stmtR->execute([':uid' => $uid, ':a' => $a, ':m' => $m]);
             $receitas = (float)$stmtR->fetchColumn();
 
             $stmtD = $this->db->prepare(
@@ -212,12 +235,18 @@ class DashboardController
                  FROM despesas d
                  LEFT JOIN cartoes c ON c.id = d.cartao_id
                  WHERE d.usuario_id = :uid
-                   AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                                 THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                                 ELSE d.data
-                            END) = :ano
-                   AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                                  THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                   AND YEAR(CASE 
+                        WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                        WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                              ELSE d.data
+                         END) = :ano
+                   AND MONTH(CASE 
+                        WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                        WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                                   ELSE d.data
                              END) = :mes"
             );
@@ -255,7 +284,7 @@ class DashboardController
                AND data_inicio <= :ultimo
                AND (data_fim IS NULL OR data_fim >= :primeiro)"
         );
-        $stmt->execute([':uid'=>$uid,':ultimo'=>$ultimoDia,':primeiro'=>$primeiroDia]);
+        $stmt->execute([':uid' => $uid, ':ultimo' => $ultimoDia, ':primeiro' => $primeiroDia]);
         $templates = $stmt->fetchAll();
 
         if (empty($templates)) return;

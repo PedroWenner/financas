@@ -25,14 +25,20 @@ class DespesaModel extends BaseModel
     ): array {
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
         $where  = "d.usuario_id = :uid
-            AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                          THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                          ELSE d.data
-                     END) = :ano
-            AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                           THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                           ELSE d.data
-                      END) = :mes";
+            AND YEAR(CASE 
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :ano
+            AND MONTH(CASE
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                ELSE d.data
+            END) = :mes";
 
         if ($categoriaId) {
             $where .= " AND d.categoria_id = :cat";
@@ -83,14 +89,20 @@ class DespesaModel extends BaseModel
         ?int $cartaoId     = null
     ): int {
         $where  = "d.usuario_id = :uid
-            AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                          THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                          ELSE d.data
-                     END) = :ano
-            AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                           THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                           ELSE d.data
-                      END) = :mes";
+            AND YEAR(CASE 
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :ano
+            AND MONTH(CASE
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                ELSE d.data
+            END) = :mes";
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
 
         if ($tipo) {
@@ -128,14 +140,20 @@ class DespesaModel extends BaseModel
         ?int $cartaoId     = null
     ): float {
         $where  = "d.usuario_id = :uid
-              AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                            ELSE d.data
-                       END) = :ano
-              AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                             ELSE d.data
-                        END) = :mes";
+            AND YEAR(CASE 
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :ano
+            AND MONTH(CASE
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                ELSE d.data
+            END) = :mes";
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
 
         if ($categoriaId) {
@@ -172,14 +190,20 @@ class DespesaModel extends BaseModel
         ?int $cartaoId     = null
     ): array {
         $where  = "d.usuario_id = :uid
-              AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                            ELSE d.data
-                       END) = :ano
-              AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                             ELSE d.data
-                        END) = :mes";
+            AND YEAR(CASE 
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :ano
+            AND MONTH(CASE
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                ELSE d.data
+            END) = :mes";
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
 
         if ($categoriaId) {
@@ -332,14 +356,20 @@ class DespesaModel extends BaseModel
             LEFT JOIN categorias cat ON cat.id = d.categoria_id
             LEFT JOIN cartoes    c   ON c.id   = d.cartao_id
             WHERE d.usuario_id = :uid
-              AND YEAR(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+              AND YEAR(CASE
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                             ELSE d.data
                        END) = :ano
-              AND MONTH(CASE WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                             ELSE d.data
-                        END) = :mes
+              AND MONTH(CASE 
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                ELSE d.data
+            END) = :mes
             GROUP BY d.categoria_id, cat.nome, cat.cor
             ORDER BY total DESC
         ");
