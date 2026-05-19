@@ -619,8 +619,8 @@ tbody tr:hover { background: var(--surface-2); }
         box-shadow: var(--shadow-lg);
     }
 
-    .sidebar-overlay {
-        display: block !important;
+    .sidebar-overlay.open {
+        display: block;
     }
 
     .main-content { margin-left: 0; }
