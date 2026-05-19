@@ -41,9 +41,9 @@ class DespesaController
             $cartaoFiltro ?: null,
             null, $pag
         );
-        $total     = $this->model->totalMes($uid, $ano, $mes);
-        $porTipo   = $this->model->totalPorTipo($uid, $ano, $mes);
-        $count     = $this->model->contar($uid, $ano, $mes, $tipoFiltro ?: null);
+        $total     = $this->model->totalMes($uid, $ano, $mes, $catFiltro ?: null, $tipoFiltro ?: null, $cartaoFiltro ?: null);
+        $porTipo   = $this->model->totalPorTipo($uid, $ano, $mes, $catFiltro ?: null, $cartaoFiltro ?: null);
+        $count     = $this->model->contar($uid, $ano, $mes, $tipoFiltro ?: null, $catFiltro ?: null, $cartaoFiltro ?: null);
 
         Response::view('despesas/index', [
             'titulo'       => 'Despesas',
