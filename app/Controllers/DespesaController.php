@@ -155,7 +155,7 @@ class DespesaController
 
         $this->model->marcarPago($id, $uid, $pago);
         $msg = $pago ? 'Despesa marcada como paga!' : 'Despesa marcada como pendente.';
-        Response::redirectWith('/despesas', 'success', $msg);
+        Response::redirectWith($this->urlRetorno(), 'success', $msg);
     }
 
     /** POST /despesas/excluir */
@@ -166,12 +166,30 @@ class DespesaController
         $id  = (int) Request::post('id', 0);
 
         $this->model->excluir($id, $uid);
-        Response::redirectWith('/despesas', 'success', 'Despesa removida.');
+        Response::redirectWith($this->urlRetorno(), 'success', 'Despesa removida.');
     }
 
     // ──────────────────────────────────────────────
     // Privados
     // ──────────────────────────────────────────────
+
+    /** Monta URL de retorno preservando mês/ano e filtros ativos do POST. */
+    private function urlRetorno(): string
+    {
+        $mes    = max(1, min(12, (int) Request::post('mes', (int) date('n'))));
+        $ano    = max(2000, min(2100, (int) Request::post('ano', (int) date('Y'))));
+        $url    = "/despesas?mes={$mes}&ano={$ano}";
+
+        $cat    = (int) Request::post('cat', 0);
+        $tipo   = Request::post('tipo', '');
+        $cartao = (int) Request::post('cartao', 0);
+
+        if ($cat)    $url .= "&cat={$cat}";
+        if ($tipo)   $url .= "&tipo=" . urlencode($tipo);
+        if ($cartao) $url .= "&cartao={$cartao}";
+
+        return $url;
+    }
 
     /** Retorna o mês/ano da fatura do cartão para a data da despesa. */
     private function mesFatura(array $dados, int $uid): array

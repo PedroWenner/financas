@@ -140,6 +140,11 @@ $baseUrl     = '/despesas';
                                 <?= CsrfHelper::field() ?>
                                 <input type="hidden" name="id" value="<?= $d['id'] ?>">
                                 <input type="hidden" name="pago" value="<?= $d['pago'] ? 0 : 1 ?>">
+                                <input type="hidden" name="mes" value="<?= $mes ?>">
+                                <input type="hidden" name="ano" value="<?= $ano ?>">
+                                <?php if ($catFiltro):    ?><input type="hidden" name="cat"    value="<?= $catFiltro ?>">   <?php endif; ?>
+                                <?php if ($tipoFiltro):   ?><input type="hidden" name="tipo"   value="<?= e($tipoFiltro) ?>"><?php endif; ?>
+                                <?php if ($cartaoFiltro): ?><input type="hidden" name="cartao" value="<?= $cartaoFiltro ?>"><?php endif; ?>
                                 <button type="submit" class="btn btn-sm <?= $d['pago'] ? 'btn-warning' : 'btn-success' ?>" title="<?= $d['pago'] ? 'Marcar como pendente' : 'Marcar como pago' ?>">
                                     <?= $d['pago'] ? '↩️' : '✅' ?>
                                 </button>
@@ -151,6 +156,11 @@ $baseUrl     = '/despesas';
                                 <form method="POST" action="/despesas/excluir" style="display:inline;">
                                     <?= CsrfHelper::field() ?>
                                     <input type="hidden" name="id" value="<?= $d['id'] ?>">
+                                    <input type="hidden" name="mes" value="<?= $mes ?>">
+                                    <input type="hidden" name="ano" value="<?= $ano ?>">
+                                    <?php if ($catFiltro):    ?><input type="hidden" name="cat"    value="<?= $catFiltro ?>">   <?php endif; ?>
+                                    <?php if ($tipoFiltro):   ?><input type="hidden" name="tipo"   value="<?= e($tipoFiltro) ?>"><?php endif; ?>
+                                    <?php if ($cartaoFiltro): ?><input type="hidden" name="cartao" value="<?= $cartaoFiltro ?>"><?php endif; ?>
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             data-confirm="Excluir a despesa '<?= addslashes(e($d['descricao'])) ?>'?">🗑️</button>
                                 </form>
