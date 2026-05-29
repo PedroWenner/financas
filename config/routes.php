@@ -78,6 +78,11 @@ $router->add('POST', '/categorias/editar', 'CategoriaController@update');
 $router->add('POST', '/categorias/excluir','CategoriaController@destroy');
 
 // ──────────────────────────────────────────────
+// Relatórios
+// ──────────────────────────────────────────────
+$router->add('GET', '/relatorios', 'RelatorioController@index');
+
+// ──────────────────────────────────────────────
 // Perfil do usuário
 // ──────────────────────────────────────────────
 $router->add('GET',  '/perfil',          'PerfilController@index');

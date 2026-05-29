@@ -64,6 +64,13 @@
                 Parcelamentos
             </a>
 
+            <div class="nav-section-title">Análise</div>
+
+            <a href="/relatorios" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+                Relatórios
+            </a>
+
             <div class="nav-section-title">Configurações</div>
 
             <a href="/categorias" class="nav-item">
