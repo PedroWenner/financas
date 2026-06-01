@@ -156,6 +156,67 @@ class RelatorioModel extends BaseModel
         return $stmt->fetchAll();
     }
 
+    /** Individual income entries for a period. */
+    public function listarReceitas(
+        int $uid,
+        int $anoIni, int $mesIni,
+        int $anoFim, int $mesFim
+    ): array {
+        $stmt = $this->db->prepare("
+            SELECT
+                r.data,
+                r.descricao,
+                r.valor,
+                COALESCE(cat.nome, 'Sem categoria') AS categoria,
+                COALESCE(cat.cor, '#6c757d')        AS cor_categoria
+            FROM receitas r
+            LEFT JOIN categorias cat ON cat.id = r.categoria_id
+            WHERE r.usuario_id = :uid
+              AND (YEAR(r.data) * 100 + MONTH(r.data)) BETWEEN :ini AND :fim
+            ORDER BY r.data DESC, r.valor DESC
+        ");
+        $stmt->execute([
+            ':uid' => $uid,
+            ':ini' => $anoIni * 100 + $mesIni,
+            ':fim' => $anoFim * 100 + $mesFim,
+        ]);
+        return $stmt->fetchAll();
+    }
+
+    /** Individual expense entries for a period (all tipos; apply cartao filter only). */
+    public function listarDespesas(
+        int $uid,
+        int $anoIni, int $mesIni,
+        int $anoFim, int $mesFim,
+        string $modoCartao = 'todos'
+    ): array {
+        [$where, $params] = $this->buildWhere($uid, [], $modoCartao);
+        $params[':ini'] = $anoIni * 100 + $mesIni;
+        $params[':fim'] = $anoFim * 100 + $mesFim;
+
+        $stmt = $this->db->prepare("
+            SELECT
+                sub.data_ef  AS data,
+                sub.descricao,
+                sub.valor,
+                sub.tipo,
+                COALESCE(cat.nome, 'Sem categoria') AS categoria,
+                COALESCE(cat.cor, '#6c757d')        AS cor_categoria
+            FROM (
+                SELECT d.valor, d.tipo, d.descricao, d.categoria_id,
+                       " . self::DATA_EF . " AS data_ef
+                FROM despesas d
+                LEFT JOIN cartoes c ON c.id = d.cartao_id
+                WHERE {$where}
+            ) sub
+            LEFT JOIN categorias cat ON cat.id = sub.categoria_id
+            WHERE (YEAR(sub.data_ef) * 100 + MONTH(sub.data_ef)) BETWEEN :ini AND :fim
+            ORDER BY sub.data_ef DESC, sub.valor DESC
+        ");
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     /** Expense totals broken down by type (fixa/variavel/parcelada) for a period. */
     public function despesasPorTipo(
         int $uid,

@@ -291,6 +291,8 @@ img { max-width: 100%; }
 }
 
 .stat-card:hover { box-shadow: var(--shadow-md); }
+.stat-card-clicavel { cursor: pointer; }
+.stat-card-clicavel:hover { transform: translateY(-1px); transition: transform var(--transition), box-shadow var(--transition); }
 .stat-card.receitas { border-left-color: var(--success); }
 .stat-card.despesas { border-left-color: var(--danger); }
 .stat-card.saldo     { border-left-color: var(--primary); }

@@ -145,13 +145,13 @@ if ($modo === 'anual') {
 
 <!-- ── Cards de Resumo ── -->
 <div class="stats-grid mb-2">
-    <div class="stat-card receitas">
+    <div class="stat-card receitas stat-card-clicavel" onclick="abrirModalItens('receitas')" title="Ver receitas do período">
         <div class="stat-label">💰 Receitas</div>
         <div class="stat-value positive"><?= moeda($totalReceitas) ?></div>
         <div class="stat-meta"><?= e($periodoLabel) ?></div>
     </div>
 
-    <div class="stat-card despesas">
+    <div class="stat-card despesas stat-card-clicavel" onclick="abrirModalItens('despesas')" title="Ver despesas do período">
         <div class="stat-label">💸 Despesas</div>
         <div class="stat-value negative"><?= moeda($totalDespesas) ?></div>
         <div class="stat-meta"><?= e($periodoLabel) ?></div>
@@ -179,17 +179,17 @@ if ($modo === 'anual') {
 
 <?php if ($porTipo['fixa'] + $porTipo['variavel'] + $porTipo['parcelada'] > 0): ?>
 <div class="stats-grid mb-2">
-    <div class="stat-card" style="border-left-color:#f59e0b;">
+    <div class="stat-card stat-card-clicavel" style="border-left-color:#f59e0b;" onclick="abrirModalItens('fixa')" title="Ver despesas fixas">
         <div class="stat-label">🔁 Fixas</div>
         <div class="stat-value"><?= moeda($porTipo['fixa']) ?></div>
         <div class="stat-meta"><?= $totalDespesas > 0 ? number_format($porTipo['fixa'] / $totalDespesas * 100, 1, ',', '.') . '% das despesas' : '—' ?></div>
     </div>
-    <div class="stat-card" style="border-left-color:#3b82f6;">
+    <div class="stat-card stat-card-clicavel" style="border-left-color:#3b82f6;" onclick="abrirModalItens('variavel')" title="Ver despesas variáveis">
         <div class="stat-label">🛒 Variáveis</div>
         <div class="stat-value"><?= moeda($porTipo['variavel']) ?></div>
         <div class="stat-meta"><?= $totalDespesas > 0 ? number_format($porTipo['variavel'] / $totalDespesas * 100, 1, ',', '.') . '% das despesas' : '—' ?></div>
     </div>
-    <div class="stat-card" style="border-left-color:#8b5cf6;">
+    <div class="stat-card stat-card-clicavel" style="border-left-color:#8b5cf6;" onclick="abrirModalItens('parcelada')" title="Ver despesas parceladas">
         <div class="stat-label">📋 Parceladas</div>
         <div class="stat-value"><?= moeda($porTipo['parcelada']) ?></div>
         <div class="stat-meta"><?= $totalDespesas > 0 ? number_format($porTipo['parcelada'] / $totalDespesas * 100, 1, ',', '.') . '% das despesas' : '—' ?></div>
@@ -419,6 +419,29 @@ if (!empty($porCartaoFiltrado)):
 
 </div><!-- /#pdf-content -->
 
+<!-- ── Modal: Itens do Card ── -->
+<div class="modal-overlay" id="modal-itens-card">
+    <div class="modal" style="max-width:680px;width:100%;">
+        <div class="modal-header">
+            <span class="modal-title" id="modal-itens-titulo">Itens</span>
+            <button class="modal-close" type="button" onclick="closeModal('modal-itens-card')">×</button>
+        </div>
+        <div class="modal-body" style="padding:0;max-height:520px;overflow-y:auto;">
+            <div id="modal-itens-vazio" class="empty-state" style="display:none;padding:2rem;">
+                <p>Nenhum item encontrado para este período.</p>
+            </div>
+            <table id="modal-itens-table" style="width:100%;border-collapse:collapse;">
+                <thead id="modal-itens-thead" style="position:sticky;top:0;background:var(--surface);z-index:1;border-bottom:1px solid var(--border);"></thead>
+                <tbody id="modal-itens-tbody"></tbody>
+            </table>
+        </div>
+        <div class="modal-footer" style="justify-content:space-between;">
+            <span id="modal-itens-rodape" class="fs-sm text-muted"></span>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-itens-card')">Fechar</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── Chart.js e Scripts ── -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
@@ -607,6 +630,82 @@ function gerarPdf() {
             btn.innerHTML = svgDown + ' Gerar PDF';
         });
 }
+
+// ── Modal: Itens do Card ──
+(function() {
+    const _listaReceitas = <?= json_encode($listaReceitas, JSON_UNESCAPED_UNICODE) ?>;
+    const _listaDespesas = <?= json_encode($listaDespesas, JSON_UNESCAPED_UNICODE) ?>;
+    const _tiposFiltro   = <?= json_encode($tipos) ?>;
+
+    const _titulos = {
+        receitas:  '💰 Receitas do período',
+        despesas:  '💸 Despesas do período',
+        fixa:      '🔁 Despesas Fixas',
+        variavel:  '🛒 Despesas Variáveis',
+        parcelada: '📋 Despesas Parceladas',
+    };
+
+    const brl     = v => 'R$ ' + parseFloat(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    const fmtDate = d => { const p = String(d).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; };
+    const esc     = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    window.abrirModalItens = function(tipo) {
+        const titulo  = document.getElementById('modal-itens-titulo');
+        const thead   = document.getElementById('modal-itens-thead');
+        const tbody   = document.getElementById('modal-itens-tbody');
+        const vazio   = document.getElementById('modal-itens-vazio');
+        const table   = document.getElementById('modal-itens-table');
+        const rodape  = document.getElementById('modal-itens-rodape');
+
+        titulo.textContent = _titulos[tipo] || tipo;
+
+        let itens;
+        if (tipo === 'receitas') {
+            itens = _listaReceitas;
+        } else if (tipo === 'despesas') {
+            itens = _listaDespesas.filter(d => _tiposFiltro.includes(d.tipo));
+        } else {
+            itens = _listaDespesas.filter(d => d.tipo === tipo);
+        }
+
+        if (itens.length === 0) {
+            table.style.display = 'none';
+            vazio.style.display = '';
+            rodape.textContent  = '';
+        } else {
+            table.style.display = '';
+            vazio.style.display = 'none';
+
+            const th = `<tr>
+                <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Data</th>
+                <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Descrição</th>
+                <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Categoria</th>
+                <th style="padding:10px 16px;text-align:right;font-weight:600;font-size:.8rem;color:var(--text-muted);">Valor</th>
+            </tr>`;
+            thead.innerHTML = th;
+
+            tbody.innerHTML = itens.map((item, i) => {
+                const bg = i % 2 === 0 ? '' : 'background:var(--surface-2);';
+                return `<tr style="${bg}">
+                    <td style="padding:9px 16px;white-space:nowrap;font-size:.85rem;">${fmtDate(item.data)}</td>
+                    <td style="padding:9px 16px;font-size:.85rem;">${esc(item.descricao) || '<span style="color:var(--text-muted)">—</span>'}</td>
+                    <td style="padding:9px 16px;font-size:.85rem;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:${esc(item.cor_categoria)};flex-shrink:0;"></div>
+                            ${esc(item.categoria)}
+                        </div>
+                    </td>
+                    <td style="padding:9px 16px;text-align:right;font-weight:600;font-size:.85rem;">${brl(item.valor)}</td>
+                </tr>`;
+            }).join('');
+
+            const total = itens.reduce((s, i) => s + parseFloat(i.valor), 0);
+            rodape.textContent = itens.length + ' item' + (itens.length !== 1 ? 's' : '') + ' · Total: ' + brl(total);
+        }
+
+        openModal('modal-itens-card');
+    };
+})();
 
 // ── Filtro: troca de modo ──
 function setModo(modo) {

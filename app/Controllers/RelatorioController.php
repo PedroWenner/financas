@@ -69,6 +69,8 @@ class RelatorioController
         $porCategoria = $this->model->despesasPorCategoria($uid, $anoIni, $mesIni, $anoFim, $mesFim, $tipos, $modoCartao);
         $porTipo      = $this->model->despesasPorTipo($uid, $anoIni, $mesIni, $anoFim, $mesFim, $modoCartao);
         $porCartao    = $this->model->despesasPorCartao($uid, $anoIni, $mesIni, $anoFim, $mesFim, $tipos, $modoCartao);
+        $listaReceitas = $this->model->listarReceitas($uid, $anoIni, $mesIni, $anoFim, $mesFim);
+        $listaDespesas = $this->model->listarDespesas($uid, $anoIni, $mesIni, $anoFim, $mesFim, $modoCartao);
 
         $series        = $this->buildSeries($anoIni, $mesIni, $anoFim, $mesFim, $receitasMes, $despesasMes);
         $totalReceitas = array_sum(array_column($receitasMes, 'total'));
@@ -93,6 +95,8 @@ class RelatorioController
             'saldo'         => $saldo,
             'anoAtual'      => $anoAtual,
             'mesAtual'      => $mesAtual,
+            'listaReceitas' => $listaReceitas,
+            'listaDespesas' => $listaDespesas,
         ]);
     }
 
