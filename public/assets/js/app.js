@@ -23,11 +23,32 @@ function toggleTema() {
 }
 
 // ──────────────────────────────────────────────
+// Toast (SweetAlert2)
+// ──────────────────────────────────────────────
+const _toast = typeof Swal !== 'undefined' ? Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 4000,
+    timerProgressBar: true,
+    didOpen: (el) => {
+        el.addEventListener('mouseenter', Swal.stopTimer);
+        el.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+}) : null;
+
+function showToast(tipo, mensagem) {
+    if (!_toast) return;
+    // PHP usa 'error', Swal usa 'error' também — mapeamento direto
+    _toast.fire({ icon: tipo, title: mensagem });
+}
+
+// ──────────────────────────────────────────────
 // Sidebar (mobile toggle)
 // ──────────────────────────────────────────────
 function toggleSidebar() {
-    const sidebar  = document.querySelector('.sidebar');
-    const overlay  = document.querySelector('.sidebar-overlay');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
     sidebar.classList.toggle('open');
     overlay.classList.toggle('open');
 }
@@ -40,21 +61,18 @@ document.addEventListener('DOMContentLoaded', function () {
     if (overlay)   overlay.addEventListener('click', toggleSidebar);
 
     // ──────────────────────────────────────────
-    // Fechar alertas
+    // Flash message como toast
+    // ──────────────────────────────────────────
+    if (window.__flash) {
+        showToast(window.__flash.tipo, window.__flash.msg);
+    }
+
+    // ──────────────────────────────────────────
+    // Fechar alertas inline (se existirem)
     // ──────────────────────────────────────────
     document.querySelectorAll('.alert-close').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.closest('.alert').remove();
-        });
+        btn.addEventListener('click', () => btn.closest('.alert').remove());
     });
-
-    // Auto-fechar alertas de sucesso após 4s
-    const alertSucc = document.querySelector('.alert-success');
-    if (alertSucc) {
-        setTimeout(() => alertSucc.style.transition = 'opacity .4s', 3600);
-        setTimeout(() => alertSucc.style.opacity   = '0',  4000);
-        setTimeout(() => alertSucc.remove(),                4500);
-    }
 
     // ──────────────────────────────────────────
     // Máscara de moeda
@@ -62,13 +80,29 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-mask="money"]').forEach(applyMoneyMask);
 
     // ──────────────────────────────────────────
-    // Confirmação de exclusão
+    // Confirmação de exclusão via SweetAlert2
     // ──────────────────────────────────────────
     document.querySelectorAll('[data-confirm]').forEach(el => {
         el.addEventListener('click', function (e) {
-            if (!confirm(this.dataset.confirm || 'Confirmar ação?')) {
-                e.preventDefault();
-            }
+            e.preventDefault();
+            const btn  = this;
+            const form = btn.closest('form');
+            const msg  = btn.dataset.confirm || 'Confirmar ação?';
+
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: msg,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                focusCancel: true,
+            }).then(result => {
+                if (result.isConfirmed && form) {
+                    form.submit();
+                }
+            });
         });
     });
 
@@ -91,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Fecha modal com Esc
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
@@ -138,7 +171,6 @@ function openEditModal(id, dados) {
     const overlay = document.getElementById(id);
     if (!overlay) return;
 
-    // Preenche campos do modal com os dados
     Object.entries(dados).forEach(([campo, valor]) => {
         const input = overlay.querySelector(`[name="${campo}"]`);
         if (input) input.value = valor;
@@ -181,11 +213,10 @@ function parseMoedaBR(str) {
     ) || 0;
 }
 
-// Cálculo automático de parcelas
 function calcularParcelas() {
-    const total    = parseMoedaBR(document.getElementById('valor_total')?.value || '0');
-    const nParc    = parseInt(document.getElementById('numero_parcelas')?.value || '1');
-    const preview  = document.getElementById('parcela-preview');
+    const total   = parseMoedaBR(document.getElementById('valor_total')?.value || '0');
+    const nParc   = parseInt(document.getElementById('numero_parcelas')?.value || '1');
+    const preview = document.getElementById('parcela-preview');
 
     if (preview && total > 0 && nParc > 0) {
         const valorParc = (total / nParc).toFixed(2);

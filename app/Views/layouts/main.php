@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($titulo ?? 'Dashboard') ?> — <?= APP_NAME ?></title>
     <link rel="stylesheet" href="/assets/css/app.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script>
         (function(){
             const t = localStorage.getItem('tema') || 'light';
@@ -123,10 +124,7 @@
         <main class="page-body">
 
             <?php if ($flash = Response::getFlash()): ?>
-                <div class="alert alert-<?= e($flash['tipo']) ?>">
-                    <?= e($flash['mensagem']) ?>
-                    <button class="alert-close" type="button">×</button>
-                </div>
+                <script>window.__flash = <?= json_encode(['tipo' => $flash['tipo'], 'msg' => $flash['mensagem']], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
             <?php endif; ?>
 
             <?= $content ?>
@@ -135,6 +133,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script src="/assets/js/app.js"></script>
 <?php if (!empty($scripts)): ?>
     <?php foreach ($scripts as $script): ?>
