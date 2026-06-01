@@ -555,40 +555,56 @@ const brlFmt    = v => 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFra
 
 // ── Gerar PDF ──
 function gerarPdf() {
-    const btn = document.getElementById('btn-pdf');
+    const btn    = document.getElementById('btn-pdf');
     const header = document.getElementById('pdf-header');
+    const svgDown = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 
     btn.disabled = true;
     btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Gerando...';
-
-    // Exibe cabeçalho apenas no PDF
     header.style.display = 'block';
+
+    // Converte cada <canvas> em <img> para garantir captura correta pelo html2canvas
+    const snapshots = [];
+    document.querySelectorAll('#pdf-content canvas').forEach(canvas => {
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        img.style.width  = canvas.offsetWidth  + 'px';
+        img.style.height = canvas.offsetHeight + 'px';
+        img.style.display = 'block';
+        canvas.parentNode.insertBefore(img, canvas);
+        canvas.style.display = 'none';
+        snapshots.push({ canvas, img });
+    });
 
     const periodo = <?= json_encode($periodoLabel) ?>;
     const filename = 'relatorio-' + periodo.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.pdf';
 
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
     html2pdf()
         .set({
-            margin: [12, 10, 12, 10],
+            margin: [8, 8, 8, 8],
             filename,
-            image: { type: 'jpeg', quality: 0.97 },
+            image: { type: 'jpeg', quality: 0.96 },
             html2canvas: {
-                scale: 2,
+                scale: 1.5,
                 useCORS: true,
-                backgroundColor: isDark ? '#1e293b' : '#f1f5f9',
+                backgroundColor: '#ffffff',
                 logging: false,
+                windowWidth: 1100,
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+            pagebreak: { mode: 'css', avoid: '.card' },
         })
         .from(document.getElementById('pdf-content'))
         .save()
         .then(() => {
+            // Restaura os canvases
+            snapshots.forEach(({ canvas, img }) => {
+                canvas.style.display = '';
+                img.remove();
+            });
             header.style.display = 'none';
             btn.disabled = false;
-            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Gerar PDF';
+            btn.innerHTML = svgDown + ' Gerar PDF';
         });
 }
 

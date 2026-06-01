@@ -685,6 +685,12 @@ tbody tr:hover { background: var(--surface-2); }
     z-index: 99;
 }
 
+/* ── PDF / Impressão ── */
+#pdf-content .card         { page-break-inside: avoid; break-inside: avoid; }
+#pdf-content .stats-grid   { page-break-inside: avoid; break-inside: avoid; }
+#pdf-content .dashboard-grid { page-break-inside: avoid; break-inside: avoid; }
+#pdf-content .table-wrapper  { page-break-inside: avoid; break-inside: avoid; }
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
