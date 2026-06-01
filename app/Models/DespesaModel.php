@@ -48,7 +48,9 @@ class DespesaModel extends BaseModel
             $where .= " AND d.tipo = :tipo";
             $params[':tipo'] = $tipo;
         }
-        if ($cartaoId) {
+        if ($cartaoId === -1) {
+            $where .= " AND d.cartao_id IS NULL";
+        } elseif ($cartaoId) {
             $where .= " AND d.cartao_id = :cartao";
             $params[':cartao'] = $cartaoId;
         }
@@ -113,7 +115,9 @@ class DespesaModel extends BaseModel
             $where .= " AND d.categoria_id = :cat";
             $params[':cat'] = $categoriaId;
         }
-        if ($cartaoId) {
+        if ($cartaoId === -1) {
+            $where .= " AND d.cartao_id IS NULL";
+        } elseif ($cartaoId) {
             $where .= " AND d.cartao_id = :cartao";
             $params[':cartao'] = $cartaoId;
         }
@@ -164,7 +168,9 @@ class DespesaModel extends BaseModel
             $where .= " AND d.tipo = :tipo";
             $params[':tipo'] = $tipo;
         }
-        if ($cartaoId) {
+        if ($cartaoId === -1) {
+            $where .= " AND d.cartao_id IS NULL";
+        } elseif ($cartaoId) {
             $where .= " AND d.cartao_id = :cartao";
             $params[':cartao'] = $cartaoId;
         }
@@ -210,7 +216,9 @@ class DespesaModel extends BaseModel
             $where .= " AND d.categoria_id = :cat";
             $params[':cat'] = $categoriaId;
         }
-        if ($cartaoId) {
+        if ($cartaoId === -1) {
+            $where .= " AND d.cartao_id IS NULL";
+        } elseif ($cartaoId) {
             $where .= " AND d.cartao_id = :cartao";
             $params[':cartao'] = $cartaoId;
         }

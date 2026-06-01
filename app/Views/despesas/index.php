@@ -66,6 +66,7 @@ $baseUrl     = '/despesas';
             <label>Cartão</label>
             <select name="cartao" class="form-control" onchange="this.form.submit()">
                 <option value="">Todos</option>
+                <option value="-1" <?= $cartaoFiltro == -1 ? 'selected' : '' ?>>Nenhum</option>
                 <?php foreach ($cartoes as $c): ?>
                     <option value="<?= $c['id'] ?>" <?= $cartaoFiltro == $c['id'] ? 'selected' : '' ?>><?= e($c['nome']) ?></option>
                 <?php endforeach; ?>
