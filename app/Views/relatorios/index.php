@@ -580,7 +580,7 @@ function gerarPdf() {
                 backgroundColor: isDark ? '#1e293b' : '#f1f5f9',
                 logging: false,
             },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
             pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
         })
         .from(document.getElementById('pdf-content'))
