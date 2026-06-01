@@ -124,6 +124,38 @@ class RelatorioModel extends BaseModel
         return $stmt->fetchAll();
     }
 
+    /** Expense totals grouped by credit card for a period. */
+    public function despesasPorCartao(
+        int $uid,
+        int $anoIni, int $mesIni,
+        int $anoFim, int $mesFim,
+        array $tipos = [],
+        string $modoCartao = 'todos'
+    ): array {
+        [$where, $params] = $this->buildWhere($uid, $tipos, $modoCartao);
+        $params[':ini'] = $anoIni * 100 + $mesIni;
+        $params[':fim'] = $anoFim * 100 + $mesFim;
+
+        $stmt = $this->db->prepare("
+            SELECT
+                COALESCE(cart.nome, 'Sem cartão') AS nome,
+                COALESCE(cart.cor,  '#6c757d')    AS cor,
+                SUM(sub.valor) AS total
+            FROM (
+                SELECT d.valor, d.cartao_id, " . self::DATA_EF . " AS data_ef
+                FROM despesas d
+                LEFT JOIN cartoes c ON c.id = d.cartao_id
+                WHERE {$where}
+            ) sub
+            LEFT JOIN cartoes cart ON cart.id = sub.cartao_id
+            WHERE (YEAR(sub.data_ef) * 100 + MONTH(sub.data_ef)) BETWEEN :ini AND :fim
+            GROUP BY sub.cartao_id, cart.nome, cart.cor
+            ORDER BY total DESC
+        ");
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     /** Expense totals broken down by type (fixa/variavel/parcelada) for a period. */
     public function despesasPorTipo(
         int $uid,

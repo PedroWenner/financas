@@ -317,6 +317,45 @@ if ($modo === 'anual') {
 </div>
 <?php endif; ?>
 
+<!-- ── Tabela de Despesas por Cartão ── -->
+<?php
+$porCartaoFiltrado = array_filter($porCartao, fn($r) => $r['nome'] !== 'Sem cartão');
+if (!empty($porCartaoFiltrado)):
+?>
+<div class="card mb-2">
+    <div class="card-header">
+        <span class="card-title">Gastos por Cartão</span>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Cartão</th>
+                    <th class="text-right">Total</th>
+                    <th class="text-right">% do Total</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($porCartaoFiltrado as $row): ?>
+                <tr>
+                    <td>
+                        <div class="d-flex align-center gap-1">
+                            <div class="color-dot" style="background:<?= e($row['cor']) ?>"></div>
+                            <?= e($row['nome']) ?>
+                        </div>
+                    </td>
+                    <td class="text-right fw-600"><?= moeda($row['total']) ?></td>
+                    <td class="text-right fs-sm text-muted">
+                        <?= $totalDespesas > 0 ? number_format($row['total'] / $totalDespesas * 100, 1, ',', '.') . '%' : '—' ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- ── Chart.js e Scripts ── -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
