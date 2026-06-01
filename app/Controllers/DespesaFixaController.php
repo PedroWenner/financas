@@ -117,6 +117,17 @@ class DespesaFixaController
         Response::redirectWith('/despesas-fixas', 'success', 'Despesa fixa desativada.');
     }
 
+    /** POST /despesas-fixas/ativar */
+    public function ativar(): void
+    {
+        CsrfHelper::check();
+        $uid = Auth::id();
+        $id  = (int) Request::post('id', 0);
+
+        $this->model->ativar($id, $uid);
+        Response::redirectWith('/despesas-fixas', 'success', 'Despesa fixa reativada.');
+    }
+
     // ──────────────────────────────────────────────
     // Privados
     // ──────────────────────────────────────────────

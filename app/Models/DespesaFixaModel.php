@@ -108,6 +108,15 @@ class DespesaFixaModel extends BaseModel
         return $stmt->rowCount() > 0;
     }
 
+    public function ativar(int $id, int $usuarioId): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE despesas_fixas SET ativo = 1 WHERE id = :id AND usuario_id = :uid"
+        );
+        $stmt->execute([':id' => $id, ':uid' => $usuarioId]);
+        return $stmt->rowCount() > 0;
+    }
+
     /**
      * Gera os lançamentos na tabela `despesas` para um mês específico,
      * caso ainda não tenham sido gerados.

@@ -47,6 +47,7 @@ $router->add('POST', '/despesas-fixas/criar',   'DespesaFixaController@store');
 $router->add('GET',  '/despesas-fixas/editar',  'DespesaFixaController@editar');
 $router->add('POST', '/despesas-fixas/editar',  'DespesaFixaController@update');
 $router->add('POST', '/despesas-fixas/excluir', 'DespesaFixaController@destroy');
+$router->add('POST', '/despesas-fixas/ativar',  'DespesaFixaController@ativar');
 
 // ──────────────────────────────────────────────
 // Cartões

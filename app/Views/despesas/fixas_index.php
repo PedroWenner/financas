@@ -71,6 +71,14 @@
                                         ⏹️
                                     </button>
                                 </form>
+                            <?php else: ?>
+                                <form method="POST" action="/despesas-fixas/ativar" style="display:inline;">
+                                    <?= CsrfHelper::field() ?>
+                                    <input type="hidden" name="id" value="<?= $f['id'] ?>">
+                                    <button type="submit" class="btn btn-success btn-sm" title="Reativar despesa fixa">
+                                        ▶️
+                                    </button>
+                                </form>
                             <?php endif; ?>
                         </div>
                     </td>
