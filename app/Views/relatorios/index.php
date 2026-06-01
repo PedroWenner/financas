@@ -79,6 +79,10 @@ $anosDisponiveis = range(date('Y') - 5, date('Y') + 1);
                 </div>
 
                 <div style="flex:1;min-width:0;"></div>
+                <button type="button" id="btn-pdf" onclick="gerarPdf()" class="btn btn-secondary btn-sm" style="flex-shrink:0;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Gerar PDF
+                </button>
                 <button type="submit" class="btn btn-primary btn-sm" style="flex-shrink:0;">Aplicar</button>
             </div>
 
@@ -124,6 +128,21 @@ if ($modo === 'anual') {
 }
 ?>
 
+<div id="pdf-content">
+
+<!-- Cabeçalho do PDF (oculto na tela, visível apenas no PDF) -->
+<div id="pdf-header" style="display:none;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #2563eb;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+            <div style="font-size:1.3rem;font-weight:700;color:#1e293b;">AlcatechFinanças</div>
+            <div style="font-size:.85rem;color:#64748b;">Relatório Financeiro — <?= e($periodoLabel) ?></div>
+        </div>
+        <div style="font-size:.78rem;color:#94a3b8;text-align:right;">
+            Gerado em <?= date('d/m/Y H:i') ?>
+        </div>
+    </div>
+</div>
+
 <!-- ── Cards de Resumo ── -->
 <div class="stats-grid mb-2">
     <div class="stat-card receitas">
@@ -157,6 +176,33 @@ if ($modo === 'anual') {
         <div class="stat-meta">das receitas poupadas</div>
     </div>
 </div>
+
+<?php if ($porTipo['fixa'] + $porTipo['variavel'] + $porTipo['parcelada'] > 0): ?>
+<div class="stats-grid mb-2">
+    <div class="stat-card" style="border-left-color:#f59e0b;">
+        <div class="stat-label">🔁 Fixas</div>
+        <div class="stat-value"><?= moeda($porTipo['fixa']) ?></div>
+        <div class="stat-meta"><?= $totalDespesas > 0 ? number_format($porTipo['fixa'] / $totalDespesas * 100, 1, ',', '.') . '% das despesas' : '—' ?></div>
+    </div>
+    <div class="stat-card" style="border-left-color:#3b82f6;">
+        <div class="stat-label">🛒 Variáveis</div>
+        <div class="stat-value"><?= moeda($porTipo['variavel']) ?></div>
+        <div class="stat-meta"><?= $totalDespesas > 0 ? number_format($porTipo['variavel'] / $totalDespesas * 100, 1, ',', '.') . '% das despesas' : '—' ?></div>
+    </div>
+    <div class="stat-card" style="border-left-color:#8b5cf6;">
+        <div class="stat-label">📋 Parceladas</div>
+        <div class="stat-value"><?= moeda($porTipo['parcelada']) ?></div>
+        <div class="stat-meta"><?= $totalDespesas > 0 ? number_format($porTipo['parcelada'] / $totalDespesas * 100, 1, ',', '.') . '% das despesas' : '—' ?></div>
+    </div>
+    <?php if (!empty($porCartaoFiltrado)): ?>
+    <div class="stat-card" style="border-left-color:#0891b2;">
+        <div class="stat-label">💳 Total Cartões</div>
+        <div class="stat-value"><?= moeda(array_sum(array_column($porCartaoFiltrado, 'total'))) ?></div>
+        <div class="stat-meta"><?= count($porCartaoFiltrado) ?> cartão<?= count($porCartaoFiltrado) !== 1 ? 'ões' : '' ?> no período</div>
+    </div>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
 
 <!-- ── Gráfico Principal: Receitas x Despesas ── -->
 <div class="card mb-2">
@@ -312,6 +358,13 @@ if ($modo === 'anual') {
                 </tr>
             <?php endforeach; ?>
             </tbody>
+            <tfoot>
+                <tr style="font-weight:700;border-top:2px solid var(--border);">
+                    <td><?= count($porCategoria) ?> categori<?= count($porCategoria) !== 1 ? 'as' : 'a' ?></td>
+                    <td class="text-right text-danger"><?= moeda($totalDespesas) ?></td>
+                    <td class="text-right">100%</td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>
@@ -351,13 +404,24 @@ if (!empty($porCartaoFiltrado)):
                 </tr>
             <?php endforeach; ?>
             </tbody>
+            <?php $totalCartoes = array_sum(array_column($porCartaoFiltrado, 'total')); ?>
+            <tfoot>
+                <tr style="font-weight:700;border-top:2px solid var(--border);">
+                    <td><?= count($porCartaoFiltrado) ?> cartão<?= count($porCartaoFiltrado) !== 1 ? 'ões' : '' ?></td>
+                    <td class="text-right text-danger"><?= moeda($totalCartoes) ?></td>
+                    <td class="text-right"><?= $totalDespesas > 0 ? number_format($totalCartoes / $totalDespesas * 100, 1, ',', '.') . '%' : '—' ?></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>
 <?php endif; ?>
 
+</div><!-- /#pdf-content -->
+
 <!-- ── Chart.js e Scripts ── -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script>
 const isDark    = () => document.documentElement.getAttribute('data-theme') === 'dark';
 const gridColor = () => isDark() ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)';
@@ -488,6 +552,45 @@ const brlFmt    = v => 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFra
     });
 })();
 <?php endif; ?>
+
+// ── Gerar PDF ──
+function gerarPdf() {
+    const btn = document.getElementById('btn-pdf');
+    const header = document.getElementById('pdf-header');
+
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Gerando...';
+
+    // Exibe cabeçalho apenas no PDF
+    header.style.display = 'block';
+
+    const periodo = <?= json_encode($periodoLabel) ?>;
+    const filename = 'relatorio-' + periodo.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.pdf';
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    html2pdf()
+        .set({
+            margin: [12, 10, 12, 10],
+            filename,
+            image: { type: 'jpeg', quality: 0.97 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: isDark ? '#1e293b' : '#f1f5f9',
+                logging: false,
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        })
+        .from(document.getElementById('pdf-content'))
+        .save()
+        .then(() => {
+            header.style.display = 'none';
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Gerar PDF';
+        });
+}
 
 // ── Filtro: troca de modo ──
 function setModo(modo) {
