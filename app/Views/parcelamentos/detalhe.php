@@ -12,8 +12,11 @@ $corBarra   = $concluido ? 'success' : ($percPago >= 70 ? 'warning' : 'primary')
     <form method="POST" action="/parcelamentos/excluir">
         <?= CsrfHelper::field() ?>
         <input type="hidden" name="id" value="<?= $p['id'] ?>">
-        <button type="submit" class="btn btn-danger btn-sm"
-                data-confirm="Excluir este parcelamento e todas as parcelas?">🗑️ Excluir tudo</button>
+        <button type="submit" class="btn btn-danger btn-sm" title="Excluir parcelamento"
+                data-confirm="Excluir este parcelamento e todas as parcelas?">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Excluir tudo
+        </button>
     </form>
 </div>
 
@@ -130,7 +133,11 @@ $corBarra   = $concluido ? 'success' : ($percPago >= 70 ? 'warning' : 'primary')
                             <input type="hidden" name="pago"            value="<?= $parc['pago'] ? 0 : 1 ?>">
                             <button type="submit" class="btn btn-sm <?= $parc['pago'] ? 'btn-warning' : 'btn-success' ?>"
                                     title="<?= $parc['pago'] ? 'Marcar como pendente' : 'Marcar como paga' ?>">
-                                <?= $parc['pago'] ? '↩️ Desfazer' : '✅ Pagar' ?>
+                                <?php if ($parc['pago']): ?>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg> Desfazer
+                                <?php else: ?>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Pagar
+                                <?php endif; ?>
                             </button>
                         </form>
                     </td>

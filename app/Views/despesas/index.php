@@ -147,11 +147,17 @@ $baseUrl     = '/despesas';
                                 <?php if ($tipoFiltro):   ?><input type="hidden" name="tipo"   value="<?= e($tipoFiltro) ?>"><?php endif; ?>
                                 <?php if ($cartaoFiltro): ?><input type="hidden" name="cartao" value="<?= $cartaoFiltro ?>"><?php endif; ?>
                                 <button type="submit" class="btn btn-sm <?= $d['pago'] ? 'btn-warning' : 'btn-success' ?>" title="<?= $d['pago'] ? 'Marcar como pendente' : 'Marcar como pago' ?>">
-                                    <?= $d['pago'] ? '↩️' : '✅' ?>
+                                    <?php if ($d['pago']): ?>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+                                    <?php else: ?>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <?php endif; ?>
                                 </button>
                             </form>
                             <?php if ($d['tipo'] !== 'fixa'): ?>
-                                <a href="/despesas/editar?id=<?= $d['id'] ?>" class="btn btn-secondary btn-sm">✏️</a>
+                                <a href="/despesas/editar?id=<?= $d['id'] ?>" class="btn btn-secondary btn-sm" title="Editar">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </a>
                             <?php endif; ?>
                             <?php if ($d['tipo'] !== 'parcelada'): ?>
                                 <form method="POST" action="/despesas/excluir" style="display:inline;">
@@ -162,8 +168,10 @@ $baseUrl     = '/despesas';
                                     <?php if ($catFiltro):    ?><input type="hidden" name="cat"    value="<?= $catFiltro ?>">   <?php endif; ?>
                                     <?php if ($tipoFiltro):   ?><input type="hidden" name="tipo"   value="<?= e($tipoFiltro) ?>"><?php endif; ?>
                                     <?php if ($cartaoFiltro): ?><input type="hidden" name="cartao" value="<?= $cartaoFiltro ?>"><?php endif; ?>
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                            data-confirm="Excluir a despesa '<?= addslashes(e($d['descricao'])) ?>'?">🗑️</button>
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Excluir"
+                                            data-confirm="Excluir a despesa '<?= addslashes(e($d['descricao'])) ?>'?">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                    </button>
                                 </form>
                             <?php endif; ?>
                         </div>

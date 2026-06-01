@@ -62,21 +62,23 @@
                     <td>
                         <div class="td-actions">
                             <?php if ($f['ativo']): ?>
-                                <a href="/despesas-fixas/editar?id=<?= $f['id'] ?>" class="btn btn-secondary btn-sm">✏️</a>
+                                <a href="/despesas-fixas/editar?id=<?= $f['id'] ?>" class="btn btn-secondary btn-sm" title="Editar">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </a>
                                 <form method="POST" action="/despesas-fixas/excluir" style="display:inline;">
                                     <?= CsrfHelper::field() ?>
                                     <input type="hidden" name="id" value="<?= $f['id'] ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm"
+                                    <button type="submit" class="btn btn-warning btn-sm" title="Desativar"
                                             data-confirm="Desativar '<?= addslashes(e($f['descricao'])) ?>'? Os lançamentos existentes não serão removidos.">
-                                        ⏹️
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
                                     </button>
                                 </form>
                             <?php else: ?>
                                 <form method="POST" action="/despesas-fixas/ativar" style="display:inline;">
                                     <?= CsrfHelper::field() ?>
                                     <input type="hidden" name="id" value="<?= $f['id'] ?>">
-                                    <button type="submit" class="btn btn-success btn-sm" title="Reativar despesa fixa">
-                                        ▶️
+                                    <button type="submit" class="btn btn-success btn-sm" title="Reativar">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
                                     </button>
                                 </form>
                             <?php endif; ?>
