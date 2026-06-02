@@ -183,8 +183,9 @@ class ParcelamentoController
         $uid = Auth::id();
         $id  = (int) Request::post('id', 0);
 
+        $filtro = Request::post('filtro', 'ativos');
         $this->model->excluir($id, $uid);
-        Response::redirectWith('/parcelamentos', 'success', 'Parcelamento e todas as parcelas foram removidos.');
+        Response::redirectWith('/parcelamentos?filtro=' . urlencode($filtro), 'success', 'Parcelamento e todas as parcelas foram removidos.');
     }
 
     // ──────────────────────────────────────────────
