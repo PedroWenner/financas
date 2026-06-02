@@ -24,6 +24,7 @@ class ParcelamentoModel extends BaseModel
      */
     public function listar(int $usuarioId, string $filtro = 'ativos'): array
     {
+        $whereExtra   = $filtro === 'bloqueados' ? 'AND par.bloqueado_a_partir IS NOT NULL' : '';
         $havingClause = match ($filtro) {
             'concluidos' => 'HAVING parcelas_pendentes = 0',
             'ativos'     => 'HAVING parcelas_pendentes > 0',
@@ -48,7 +49,7 @@ class ParcelamentoModel extends BaseModel
             LEFT JOIN parcelas   p   ON p.parcelamento_id = par.id
             LEFT JOIN cartoes    c   ON c.id  = par.cartao_id
             LEFT JOIN categorias cat ON cat.id = par.categoria_id
-            WHERE par.usuario_id = :uid
+            WHERE par.usuario_id = :uid {$whereExtra}
             GROUP BY par.id
             {$havingClause}
             ORDER BY proxima_parcela ASC, par.created_at DESC

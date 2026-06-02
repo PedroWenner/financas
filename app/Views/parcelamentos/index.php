@@ -9,9 +9,12 @@
 
 <!-- Filtros -->
 <div class="d-flex gap-1 mb-3">
-    <a href="/parcelamentos?filtro=ativos"     class="btn <?= $filtro === 'ativos'     ? 'btn-primary' : 'btn-secondary' ?> btn-sm">Em andamento</a>
-    <a href="/parcelamentos?filtro=concluidos" class="btn <?= $filtro === 'concluidos' ? 'btn-primary' : 'btn-secondary' ?> btn-sm">Concluídos</a>
-    <a href="/parcelamentos?filtro=todos"      class="btn <?= $filtro === 'todos'      ? 'btn-primary' : 'btn-secondary' ?> btn-sm">Todos</a>
+    <a href="/parcelamentos?filtro=ativos"     class="btn <?= $filtro === 'ativos'     ? 'btn-primary'  : 'btn-secondary' ?> btn-sm">Em andamento</a>
+    <a href="/parcelamentos?filtro=concluidos" class="btn <?= $filtro === 'concluidos' ? 'btn-primary'  : 'btn-secondary' ?> btn-sm">Concluídos</a>
+    <a href="/parcelamentos?filtro=bloqueados" class="btn <?= $filtro === 'bloqueados' ? 'btn-warning'  : 'btn-secondary' ?> btn-sm">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Bloqueados
+    </a>
+    <a href="/parcelamentos?filtro=todos"      class="btn <?= $filtro === 'todos'      ? 'btn-primary'  : 'btn-secondary' ?> btn-sm">Todos</a>
 </div>
 
 <!-- Listagem -->
@@ -19,9 +22,11 @@
     <div class="card">
         <div class="card-body empty-state">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            <h3>Nenhum parcelamento <?= $filtro === 'ativos' ? 'em andamento' : ($filtro === 'concluidos' ? 'concluído' : 'cadastrado') ?></h3>
-            <p>Registre uma compra parcelada para acompanhar as parcelas mês a mês.</p>
+            <h3>Nenhum parcelamento <?= match($filtro) { 'ativos' => 'em andamento', 'concluidos' => 'concluído', 'bloqueados' => 'bloqueado', default => 'cadastrado' } ?></h3>
+            <p><?= $filtro === 'bloqueados' ? 'Nenhum parcelamento foi bloqueado ainda.' : 'Registre uma compra parcelada para acompanhar as parcelas mês a mês.' ?></p>
+            <?php if ($filtro !== 'bloqueados'): ?>
             <div class="mt-2"><a href="/parcelamentos/criar" class="btn btn-primary">+ Nova Compra Parcelada</a></div>
+            <?php endif; ?>
         </div>
     </div>
 <?php else: ?>
