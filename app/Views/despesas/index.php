@@ -1,8 +1,20 @@
 <?php
-$mesAnterior = $mes === 1  ? ['mes' => 12, 'ano' => $ano - 1] : ['mes' => $mes - 1, 'ano' => $ano];
-$mesProximo  = $mes === 12 ? ['mes' => 1,  'ano' => $ano + 1] : ['mes' => $mes + 1, 'ano' => $ano];
-$ehAtual     = ($mes == date('n') && $ano == date('Y'));
-$baseUrl     = '/despesas';
+$mesAnterior  = $mes === 1  ? ['mes' => 12, 'ano' => $ano - 1] : ['mes' => $mes - 1, 'ano' => $ano];
+$mesProximo   = $mes === 12 ? ['mes' => 1,  'ano' => $ano + 1] : ['mes' => $mes + 1, 'ano' => $ano];
+$ehAtual      = ($mes == date('n') && $ano == date('Y'));
+$baseUrl      = '/despesas';
+$porPagina    = 50;
+$totalPaginas = max(1, (int) ceil($count / $porPagina));
+
+// Monta query string base preservando todos os filtros ativos
+$qsFiltros = 'mes=' . $mes . '&ano=' . $ano;
+if ($catFiltro)    $qsFiltros .= '&cat='    . $catFiltro;
+if ($tipoFiltro)   $qsFiltros .= '&tipo='   . urlencode($tipoFiltro);
+if ($cartaoFiltro) $qsFiltros .= '&cartao=' . $cartaoFiltro;
+
+function pagUrl(string $base, string $qs, int $p): string {
+    return $base . '?' . $qs . ($p > 1 ? '&pag=' . $p : '');
+}
 ?>
 
 <!-- Cabeçalho -->
@@ -188,4 +200,44 @@ $baseUrl     = '/despesas';
             </tfoot>
         </table>
     </div>
+<?php endif; ?>
+
+<?php if ($totalPaginas > 1): ?>
+<nav class="d-flex justify-center align-center gap-1 mt-3" style="flex-wrap:wrap;">
+    <?php if ($pagina > 1): ?>
+        <a href="<?= pagUrl($baseUrl, $qsFiltros, $pagina - 1) ?>" class="btn btn-secondary btn-sm">‹ Anterior</a>
+    <?php else: ?>
+        <span class="btn btn-secondary btn-sm" style="opacity:.4;cursor:default;">‹ Anterior</span>
+    <?php endif; ?>
+
+    <?php
+    // Gera janela de páginas: sempre 1, última, e ±2 ao redor da atual
+    $paginas = array_unique(array_filter(array_merge(
+        [1, $totalPaginas],
+        range(max(1, $pagina - 2), min($totalPaginas, $pagina + 2))
+    )));
+    sort($paginas);
+    $prev = 0;
+    foreach ($paginas as $p):
+        if ($prev && $p - $prev > 1): ?>
+            <span style="padding:0 4px;line-height:32px;color:#6b7280;">…</span>
+        <?php endif;
+        if ($p === $pagina): ?>
+            <span class="btn btn-primary btn-sm" style="cursor:default;"><?= $p ?></span>
+        <?php else: ?>
+            <a href="<?= pagUrl($baseUrl, $qsFiltros, $p) ?>" class="btn btn-secondary btn-sm"><?= $p ?></a>
+        <?php endif;
+        $prev = $p;
+    endforeach;
+    ?>
+
+    <?php if ($pagina < $totalPaginas): ?>
+        <a href="<?= pagUrl($baseUrl, $qsFiltros, $pagina + 1) ?>" class="btn btn-secondary btn-sm">Próxima ›</a>
+    <?php else: ?>
+        <span class="btn btn-secondary btn-sm" style="opacity:.4;cursor:default;">Próxima ›</span>
+    <?php endif; ?>
+</nav>
+<p class="text-center mt-1" style="font-size:.8rem;color:#6b7280;">
+    Página <?= $pagina ?> de <?= $totalPaginas ?> — <?= $count ?> registro<?= $count !== 1 ? 's' : '' ?>
+</p>
 <?php endif; ?>
