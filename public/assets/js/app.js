@@ -107,6 +107,34 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ──────────────────────────────────────────
+    // Confirmação de exclusão permanente (danger)
+    // ──────────────────────────────────────────
+    document.querySelectorAll('[data-confirm-danger]').forEach(el => {
+        el.addEventListener('click', function (e) {
+            e.preventDefault();
+            const btn  = this;
+            const form = btn.closest('form');
+            const msg  = btn.dataset.confirmDanger || 'Esta ação não pode ser desfeita.';
+
+            Swal.fire({
+                title: 'Excluir permanentemente?',
+                text: msg,
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, excluir',
+                confirmButtonColor: '#dc3545',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                focusCancel: true,
+            }).then(result => {
+                if (result.isConfirmed && form) {
+                    form.submit();
+                }
+            });
+        });
+    });
+
+    // ──────────────────────────────────────────
     // Modais
     // ──────────────────────────────────────────
     document.querySelectorAll('[data-modal]').forEach(btn => {

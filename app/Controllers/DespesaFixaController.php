@@ -117,6 +117,17 @@ class DespesaFixaController
         Response::redirectWith('/despesas-fixas', 'success', 'Despesa fixa desativada.');
     }
 
+    /** POST /despesas-fixas/deletar — exclusão permanente com todos os lançamentos */
+    public function deletar(): void
+    {
+        CsrfHelper::check();
+        $uid = Auth::id();
+        $id  = (int) Request::post('id', 0);
+
+        $ok = $this->model->excluirComLancamentos($id, $uid);
+        Response::redirectWith('/despesas-fixas', $ok ? 'success' : 'error', $ok ? 'Despesa fixa e todos os lançamentos excluídos.' : 'Registro não encontrado.');
+    }
+
     /** POST /despesas-fixas/ativar */
     public function ativar(): void
     {

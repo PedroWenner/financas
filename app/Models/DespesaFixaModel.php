@@ -108,6 +108,36 @@ class DespesaFixaModel extends BaseModel
         return $stmt->rowCount() > 0;
     }
 
+    /**
+     * Exclui permanentemente o template e todos os lançamentos vinculados a ele.
+     */
+    public function excluirComLancamentos(int $id, int $usuarioId): bool
+    {
+        // Verifica se pertence ao usuário antes de excluir
+        $stmt = $this->db->prepare(
+            "SELECT id FROM despesas_fixas WHERE id = :id AND usuario_id = :uid"
+        );
+        $stmt->execute([':id' => $id, ':uid' => $usuarioId]);
+        if (!$stmt->fetch()) return false;
+
+        $this->db->beginTransaction();
+        try {
+            $this->db->prepare(
+                "DELETE FROM despesas WHERE despesa_fixa_id = :id AND usuario_id = :uid"
+            )->execute([':id' => $id, ':uid' => $usuarioId]);
+
+            $this->db->prepare(
+                "DELETE FROM despesas_fixas WHERE id = :id AND usuario_id = :uid"
+            )->execute([':id' => $id, ':uid' => $usuarioId]);
+
+            $this->db->commit();
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     public function ativar(int $id, int $usuarioId): bool
     {
         $stmt = $this->db->prepare(
