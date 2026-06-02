@@ -76,19 +76,23 @@ class DashboardController
              LEFT JOIN cartoes c ON c.id = d.cartao_id
              WHERE d.usuario_id = :uid
                AND YEAR(CASE
+                    WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                        THEN d.data_pagamento
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                             ELSE d.data
-                        END) = :ano
-               AND MONTH(CASE 
-               WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :ano
+               AND MONTH(CASE
+                    WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                        THEN d.data_pagamento
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                              ELSE d.data
-                         END) = :mes"
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :mes"
         );
         $stmt->execute([':uid' => $uid, ':ano' => $ano, ':mes' => $mes]);
         return (float) $stmt->fetchColumn();
@@ -102,20 +106,24 @@ class DashboardController
              LEFT JOIN categorias cat ON cat.id = d.categoria_id
              LEFT JOIN cartoes    c   ON c.id   = d.cartao_id
              WHERE d.usuario_id = :uid
-               AND YEAR(CASE 
+               AND YEAR(CASE
+                    WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                        THEN d.data_pagamento
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                             ELSE d.data
-                        END) = :ano
-               AND MONTH(CASE 
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :ano
+               AND MONTH(CASE
+                    WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                        THEN d.data_pagamento
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                              ELSE d.data
-                         END) = :mes
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :mes
              GROUP BY d.categoria_id, cat.nome, cat.cor
              ORDER BY total DESC
              LIMIT 10"
@@ -133,14 +141,20 @@ class DashboardController
              FROM cartoes c
              LEFT JOIN despesas d
                 ON d.cartao_id = c.id
-                AND YEAR(CASE WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
+                AND YEAR(CASE
+                         WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                             THEN d.data_pagamento
+                         WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
+                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                         ELSE d.data
+                    END) = :ano
+                AND MONTH(CASE
+                          WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                              THEN d.data_pagamento
+                          WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
                               THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                              ELSE d.data
-                         END) = :ano
-                AND MONTH(CASE WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
-                               THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                               ELSE d.data
-                          END) = :mes
+                          ELSE d.data
+                    END) = :mes
              WHERE c.usuario_id = :uid AND c.ativo = 1
              GROUP BY c.id, c.nome, c.cor, c.limite
              ORDER BY total_gasto DESC"
@@ -166,20 +180,24 @@ class DashboardController
              LEFT JOIN categorias cat2 ON cat2.id = d.categoria_id
              LEFT JOIN cartoes    c    ON c.id    = d.cartao_id
              WHERE d.usuario_id = :uid2
-               AND YEAR(CASE 
-               WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-               WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                             ELSE d.data
-                        END) = :ano2
-               AND MONTH(CASE 
+               AND YEAR(CASE
+                    WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                        THEN d.data_pagamento
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                              ELSE d.data
-                         END) = :mes2
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :ano2
+               AND MONTH(CASE
+                    WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                        THEN d.data_pagamento
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
+                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    ELSE d.data
+                END) = :mes2
 
              ORDER BY data DESC
              LIMIT 10"
@@ -235,20 +253,24 @@ class DashboardController
                  FROM despesas d
                  LEFT JOIN cartoes c ON c.id = d.cartao_id
                  WHERE d.usuario_id = :uid
-                   AND YEAR(CASE 
+                   AND YEAR(CASE
+                        WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                            THEN d.data_pagamento
                         WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                         WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                              ELSE d.data
-                         END) = :ano
-                   AND MONTH(CASE 
+                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                        ELSE d.data
+                    END) = :ano
+                   AND MONTH(CASE
+                        WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
+                            THEN d.data_pagamento
                         WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                         WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                              THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                                  ELSE d.data
-                             END) = :mes"
+                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                        ELSE d.data
+                    END) = :mes"
             );
             $stmtD->execute([':uid' => $uid, ':ano' => $a, ':mes' => $m]);
             $despesas = (float)$stmtD->fetchColumn();
