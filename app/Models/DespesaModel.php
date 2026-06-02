@@ -20,8 +20,9 @@ class DespesaModel extends BaseModel
         ?string $tipo       = null,
         ?int $cartaoId      = null,
         ?string $pagamento  = null,
+        ?int    $pago       = null,
         int $pagina         = 1,
-        int $porPagina      = 25
+        int $porPagina      = 50
     ): array {
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
         $where  = "d.usuario_id = :uid
@@ -63,6 +64,10 @@ class DespesaModel extends BaseModel
             $where .= " AND d.forma_pagamento = :pag";
             $params[':pag'] = $pagamento;
         }
+        if ($pago !== null) {
+            $where .= " AND d.pago = :pago";
+            $params[':pago'] = $pago;
+        }
 
         $offset = ($pagina - 1) * $porPagina;
 
@@ -93,7 +98,8 @@ class DespesaModel extends BaseModel
         int $mes,
         ?string $tipo      = null,
         ?int $categoriaId  = null,
-        ?int $cartaoId     = null
+        ?int $cartaoId     = null,
+        ?int $pago         = null
     ): int {
         $where  = "d.usuario_id = :uid
             AND YEAR(CASE
@@ -130,6 +136,10 @@ class DespesaModel extends BaseModel
         } elseif ($cartaoId) {
             $where .= " AND d.cartao_id = :cartao";
             $params[':cartao'] = $cartaoId;
+        }
+        if ($pago !== null) {
+            $where .= " AND d.pago = :pago";
+            $params[':pago'] = $pago;
         }
 
         $stmt = $this->db->prepare("

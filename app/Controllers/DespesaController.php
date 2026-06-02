@@ -35,17 +35,19 @@ class DespesaController
         $catFiltro    = Request::getInt('cat', 0);
         $tipoFiltro   = Request::getString('tipo');
         $cartaoFiltro = Request::getInt('cartao', 0);
+        $situacao     = Request::getString('situacao');
+        $pagoFiltro   = $situacao !== '' ? (int) $situacao : null;
 
         $despesas  = $this->model->listar(
             $uid, $ano, $mes,
             $catFiltro    ?: null,
             $tipoFiltro   ?: null,
             $cartaoFiltro ?: null,
-            null, $pag
+            null, $pagoFiltro, $pag
         );
         $total     = $this->model->totalMes($uid, $ano, $mes, $catFiltro ?: null, $tipoFiltro ?: null, $cartaoFiltro ?: null);
         $porTipo   = $this->model->totalPorTipo($uid, $ano, $mes, $catFiltro ?: null, $cartaoFiltro ?: null);
-        $count     = $this->model->contar($uid, $ano, $mes, $tipoFiltro ?: null, $catFiltro ?: null, $cartaoFiltro ?: null);
+        $count     = $this->model->contar($uid, $ano, $mes, $tipoFiltro ?: null, $catFiltro ?: null, $cartaoFiltro ?: null, $pagoFiltro);
 
         Response::view('despesas/index', [
             'titulo'       => 'Despesas',
@@ -61,6 +63,7 @@ class DespesaController
             'catFiltro'    => $catFiltro,
             'tipoFiltro'   => $tipoFiltro,
             'cartaoFiltro' => $cartaoFiltro,
+            'situacao'     => $situacao,
         ]);
     }
 
@@ -186,9 +189,11 @@ class DespesaController
         $tipo   = Request::post('tipo', '');
         $cartao = (int) Request::post('cartao', 0);
 
-        if ($cat)    $url .= "&cat={$cat}";
-        if ($tipo)   $url .= "&tipo=" . urlencode($tipo);
-        if ($cartao) $url .= "&cartao={$cartao}";
+        if ($cat)      $url .= "&cat={$cat}";
+        if ($tipo)     $url .= "&tipo=" . urlencode($tipo);
+        if ($cartao)   $url .= "&cartao={$cartao}";
+        $situacao = Request::post('situacao', '');
+        if ($situacao !== '') $url .= "&situacao=" . urlencode($situacao);
 
         return $url;
     }
