@@ -331,6 +331,31 @@ class ParcelamentoModel extends BaseModel
     }
 
     /**
+     * Bloqueia a exibição de parcelas a partir de uma data (primeiro dia do mês informado).
+     * Parcelas com data_vencimento >= $data não aparecerão mais nas despesas.
+     */
+    public function bloquear(int $id, int $usuarioId, string $data): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE parcelamentos SET bloqueado_a_partir = :data WHERE id = :id AND usuario_id = :uid"
+        );
+        $stmt->execute([':data' => $data, ':id' => $id, ':uid' => $usuarioId]);
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Remove o bloqueio, fazendo as parcelas voltarem a aparecer nas despesas.
+     */
+    public function desbloquear(int $id, int $usuarioId): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE parcelamentos SET bloqueado_a_partir = NULL WHERE id = :id AND usuario_id = :uid"
+        );
+        $stmt->execute([':id' => $id, ':uid' => $usuarioId]);
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
      * Calcula a data da primeira parcela.
      * Delega para CartaoModel se um cartão for informado.
      */

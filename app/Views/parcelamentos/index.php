@@ -93,11 +93,34 @@
                     <?php endif; ?>
                 </div>
 
+                <?php if ($p['bloqueado_a_partir']): ?>
+                    <div class="fs-sm mt-2" style="color:var(--warning);display:flex;align-items:center;gap:4px;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Bloqueado a partir de <?= dataFmt($p['bloqueado_a_partir']) ?>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Ações -->
-                <div class="d-flex gap-1">
+                <div class="d-flex gap-1 mt-3">
                     <a href="/parcelamentos/detalhe?id=<?= $p['id'] ?>" class="btn btn-outline btn-sm" style="flex:1;justify-content:center;">
                         Ver Parcelas
                     </a>
+                    <?php if ($p['bloqueado_a_partir']): ?>
+                        <form method="POST" action="/parcelamentos/desbloquear" style="display:inline;">
+                            <?= CsrfHelper::field() ?>
+                            <input type="hidden" name="id" value="<?= $p['id'] ?>">
+                            <button type="submit" class="btn btn-success btn-sm" title="Remover bloqueio"
+                                    data-confirm="Remover o bloqueio de '<?= addslashes(e($p['descricao'])) ?>'? As parcelas voltarão a aparecer nas despesas.">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <button type="button" class="btn btn-warning btn-sm btn-abrir-bloqueio" title="Bloquear a partir de..."
+                                data-id="<?= $p['id'] ?>"
+                                data-nome="<?= addslashes(e($p['descricao'])) ?>">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </button>
+                    <?php endif; ?>
                     <form method="POST" action="/parcelamentos/excluir" style="display:inline;">
                         <?= CsrfHelper::field() ?>
                         <input type="hidden" name="id" value="<?= $p['id'] ?>">
@@ -112,3 +135,50 @@
     <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
+<!-- Modal: Bloquear Parcelamento -->
+<div class="modal-overlay" id="modal-bloquear">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Bloquear Parcelamento</span>
+            <button class="modal-close" type="button">×</button>
+        </div>
+        <form method="POST" action="/parcelamentos/bloquear">
+            <?= CsrfHelper::field() ?>
+            <input type="hidden" name="id" id="bloquear-id">
+            <div class="modal-body">
+                <p class="fs-sm text-muted mb-3">
+                    As parcelas de <strong id="bloquear-nome"></strong>
+                    a partir do mês selecionado não serão mais exibidas nas despesas.
+                </p>
+                <div class="form-group">
+                    <label for="bloquear-mes" class="form-label">Bloquear a partir de</label>
+                    <input type="month" name="bloqueado_a_partir" id="bloquear-mes" class="form-control" required>
+                    <div class="fs-sm text-muted mt-1">Parcelas deste mês em diante serão ocultadas nas despesas.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+                <button type="submit" class="btn btn-warning">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Bloquear
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.btn-abrir-bloqueio').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('bloquear-id').value   = btn.dataset.id;
+        document.getElementById('bloquear-nome').textContent = btn.dataset.nome;
+        const d  = new Date();
+        d.setMonth(d.getMonth() + 1);
+        const yy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        document.getElementById('bloquear-mes').value = yy + '-' + mm;
+        openModal('modal-bloquear');
+    });
+});
+</script>

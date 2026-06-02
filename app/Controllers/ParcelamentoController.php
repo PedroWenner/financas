@@ -138,6 +138,44 @@ class ParcelamentoController
         );
     }
 
+    /** POST /parcelamentos/bloquear */
+    public function bloquear(): void
+    {
+        CsrfHelper::check();
+        $uid         = Auth::id();
+        $id          = (int) Request::post('id', 0);
+        $mes         = Request::post('bloqueado_a_partir', '');
+        $fromDetalhe = (bool) Request::post('from_detalhe', 0);
+        $redirect    = $fromDetalhe ? '/parcelamentos/detalhe?id=' . $id : '/parcelamentos';
+
+        if (empty($mes) || !preg_match('/^\d{4}-\d{2}$/', $mes)) {
+            Response::redirectWith($redirect, 'error', 'Informe um mês/ano válido.');
+            return;
+        }
+
+        $data    = $mes . '-01';
+        $dataFmt = date('m/Y', strtotime($data));
+        $ok      = $this->model->bloquear($id, $uid, $data);
+        Response::redirectWith($redirect, $ok ? 'success' : 'error',
+            $ok ? "Parcelamento bloqueado a partir de {$dataFmt}." : 'Registro não encontrado.'
+        );
+    }
+
+    /** POST /parcelamentos/desbloquear */
+    public function desbloquear(): void
+    {
+        CsrfHelper::check();
+        $uid         = Auth::id();
+        $id          = (int) Request::post('id', 0);
+        $fromDetalhe = (bool) Request::post('from_detalhe', 0);
+        $redirect    = $fromDetalhe ? '/parcelamentos/detalhe?id=' . $id : '/parcelamentos';
+
+        $ok = $this->model->desbloquear($id, $uid);
+        Response::redirectWith($redirect, $ok ? 'success' : 'error',
+            $ok ? 'Bloqueio removido. O parcelamento voltará a aparecer nas despesas.' : 'Registro não encontrado.'
+        );
+    }
+
     /** POST /parcelamentos/excluir */
     public function destroy(): void
     {

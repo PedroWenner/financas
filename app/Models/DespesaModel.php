@@ -25,7 +25,7 @@ class DespesaModel extends BaseModel
     ): array {
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
         $where  = "d.usuario_id = :uid
-            AND YEAR(CASE 
+            AND YEAR(CASE
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
@@ -38,7 +38,8 @@ class DespesaModel extends BaseModel
                 WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                     THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                 ELSE d.data
-            END) = :mes";
+            END) = :mes"
+            . $this->condicaoBloqueio();
 
         if ($categoriaId) {
             $where .= " AND d.categoria_id = :cat";
@@ -91,7 +92,7 @@ class DespesaModel extends BaseModel
         ?int $cartaoId     = null
     ): int {
         $where  = "d.usuario_id = :uid
-            AND YEAR(CASE 
+            AND YEAR(CASE
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
@@ -104,7 +105,8 @@ class DespesaModel extends BaseModel
                 WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                     THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                 ELSE d.data
-            END) = :mes";
+            END) = :mes"
+            . $this->condicaoBloqueio();
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
 
         if ($tipo) {
@@ -144,7 +146,7 @@ class DespesaModel extends BaseModel
         ?int $cartaoId     = null
     ): float {
         $where  = "d.usuario_id = :uid
-            AND YEAR(CASE 
+            AND YEAR(CASE
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
@@ -157,7 +159,8 @@ class DespesaModel extends BaseModel
                 WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                     THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                 ELSE d.data
-            END) = :mes";
+            END) = :mes"
+            . $this->condicaoBloqueio();
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
 
         if ($categoriaId) {
@@ -196,7 +199,7 @@ class DespesaModel extends BaseModel
         ?int $cartaoId     = null
     ): array {
         $where  = "d.usuario_id = :uid
-            AND YEAR(CASE 
+            AND YEAR(CASE
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
@@ -209,7 +212,8 @@ class DespesaModel extends BaseModel
                 WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                     THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                 ELSE d.data
-            END) = :mes";
+            END) = :mes"
+            . $this->condicaoBloqueio();
         $params = [':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes];
 
         if ($categoriaId) {
@@ -355,7 +359,7 @@ class DespesaModel extends BaseModel
      */
     public function porCategoria(int $usuarioId, int $ano, int $mes): array
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             SELECT
                 COALESCE(cat.nome, 'Sem categoria') AS nome,
                 COALESCE(cat.cor,  '#6c757d')       AS cor,
@@ -368,20 +372,37 @@ class DespesaModel extends BaseModel
                 WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                     THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                 WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                            ELSE d.data
-                       END) = :ano
-              AND MONTH(CASE 
+                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                ELSE d.data
+              END) = :ano
+              AND MONTH(CASE
                 WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
                     THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                 WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                     THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                 ELSE d.data
-            END) = :mes
+              END) = :mes
+              " . $this->condicaoBloqueio() . "
             GROUP BY d.categoria_id, cat.nome, cat.cor
             ORDER BY total DESC
-        ");
+        ";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([':uid' => $usuarioId, ':ano' => $ano, ':mes' => $mes]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Exclui parcelas bloqueadas a partir de uma data do resultado das queries.
+     * Aplicado em todas as leituras de despesas para respeitar o bloqueio de parcelamentos.
+     */
+    private function condicaoBloqueio(): string
+    {
+        return " AND (d.tipo != 'parcelada' OR d.parcela_id IS NULL OR NOT EXISTS (
+            SELECT 1 FROM parcelas p_blk
+            JOIN parcelamentos par_blk ON par_blk.id = p_blk.parcelamento_id
+            WHERE p_blk.id = d.parcela_id
+              AND par_blk.bloqueado_a_partir IS NOT NULL
+              AND d.data >= par_blk.bloqueado_a_partir
+        ))";
     }
 }

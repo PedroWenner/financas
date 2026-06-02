@@ -69,7 +69,9 @@ $router->add('GET',  '/parcelamentos/criar',   'ParcelamentoController@criar');
 $router->add('POST', '/parcelamentos/criar',   'ParcelamentoController@store');
 $router->add('GET',  '/parcelamentos/detalhe', 'ParcelamentoController@detalhe');
 $router->add('POST', '/parcelamentos/pagar',   'ParcelamentoController@pagarParcela');
-$router->add('POST', '/parcelamentos/excluir', 'ParcelamentoController@destroy');
+$router->add('POST', '/parcelamentos/bloquear',    'ParcelamentoController@bloquear');
+$router->add('POST', '/parcelamentos/desbloquear', 'ParcelamentoController@desbloquear');
+$router->add('POST', '/parcelamentos/excluir',     'ParcelamentoController@destroy');
 
 // ──────────────────────────────────────────────
 // Categorias
