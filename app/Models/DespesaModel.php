@@ -161,7 +161,8 @@ class DespesaModel extends BaseModel
         int $mes,
         ?int $categoriaId  = null,
         ?string $tipo      = null,
-        ?int $cartaoId     = null
+        ?int $cartaoId     = null,
+        ?int $pago         = null
     ): float {
         $where  = "d.usuario_id = :uid
             AND YEAR(CASE
@@ -198,6 +199,10 @@ class DespesaModel extends BaseModel
         } elseif ($cartaoId) {
             $where .= " AND d.cartao_id = :cartao";
             $params[':cartao'] = $cartaoId;
+        }
+        if ($pago !== null) {
+            $where .= " AND d.pago = :pago";
+            $params[':pago'] = $pago;
         }
 
         $stmt = $this->db->prepare("

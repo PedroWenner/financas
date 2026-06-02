@@ -204,8 +204,10 @@ function pagUrl(string $base, string $qs, int $p): string {
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="6" class="fw-600 text-right" style="padding:12px 16px;">Total:</td>
-                    <td class="fw-700 text-danger text-right" style="padding:12px 16px;"><?= moeda($total) ?></td>
+                    <td colspan="6" class="fw-600 text-right" style="padding:12px 16px;">
+                        <?= ($tipoFiltro || $situacao !== '') ? 'Total filtrado:' : 'Total:' ?>
+                    </td>
+                    <td class="fw-700 text-danger text-right" style="padding:12px 16px;"><?= moeda($totalFiltrado) ?></td>
                     <td></td>
                 </tr>
             </tfoot>

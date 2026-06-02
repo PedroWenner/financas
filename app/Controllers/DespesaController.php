@@ -38,32 +38,36 @@ class DespesaController
         $situacao     = Request::getString('situacao');
         $pagoFiltro   = $situacao !== '' ? (int) $situacao : null;
 
-        $despesas  = $this->model->listar(
+        $despesas      = $this->model->listar(
             $uid, $ano, $mes,
             $catFiltro    ?: null,
             $tipoFiltro   ?: null,
             $cartaoFiltro ?: null,
             null, $pagoFiltro, $pag
         );
-        $total     = $this->model->totalMes($uid, $ano, $mes, $catFiltro ?: null, $tipoFiltro ?: null, $cartaoFiltro ?: null);
-        $porTipo   = $this->model->totalPorTipo($uid, $ano, $mes, $catFiltro ?: null, $cartaoFiltro ?: null);
-        $count     = $this->model->contar($uid, $ano, $mes, $tipoFiltro ?: null, $catFiltro ?: null, $cartaoFiltro ?: null, $pagoFiltro);
+        // Cards de resumo: sempre mês completo (sem filtro de tipo/situação)
+        $total         = $this->model->totalMes($uid, $ano, $mes, $catFiltro ?: null, null, $cartaoFiltro ?: null);
+        $porTipo       = $this->model->totalPorTipo($uid, $ano, $mes, $catFiltro ?: null, $cartaoFiltro ?: null);
+        // Rodapé da tabela: respeita todos os filtros ativos
+        $totalFiltrado = $this->model->totalMes($uid, $ano, $mes, $catFiltro ?: null, $tipoFiltro ?: null, $cartaoFiltro ?: null, $pagoFiltro);
+        $count         = $this->model->contar($uid, $ano, $mes, $tipoFiltro ?: null, $catFiltro ?: null, $cartaoFiltro ?: null, $pagoFiltro);
 
         Response::view('despesas/index', [
-            'titulo'       => 'Despesas',
-            'despesas'     => $despesas,
-            'total'        => $total,
-            'porTipo'      => $porTipo,
-            'count'        => $count,
-            'categorias'   => $this->categorias->listar($uid, 'despesa'),
-            'cartoes'      => $this->cartoes->listar($uid),
-            'ano'          => $ano,
-            'mes'          => $mes,
-            'pagina'       => $pag,
-            'catFiltro'    => $catFiltro,
-            'tipoFiltro'   => $tipoFiltro,
-            'cartaoFiltro' => $cartaoFiltro,
-            'situacao'     => $situacao,
+            'titulo'         => 'Despesas',
+            'despesas'       => $despesas,
+            'total'          => $total,
+            'totalFiltrado'  => $totalFiltrado,
+            'porTipo'        => $porTipo,
+            'count'          => $count,
+            'categorias'     => $this->categorias->listar($uid, 'despesa'),
+            'cartoes'        => $this->cartoes->listar($uid),
+            'ano'            => $ano,
+            'mes'            => $mes,
+            'pagina'         => $pag,
+            'catFiltro'      => $catFiltro,
+            'tipoFiltro'     => $tipoFiltro,
+            'cartaoFiltro'   => $cartaoFiltro,
+            'situacao'       => $situacao,
         ]);
     }
 
