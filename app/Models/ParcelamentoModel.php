@@ -24,7 +24,13 @@ class ParcelamentoModel extends BaseModel
      */
     public function listar(int $usuarioId, string $filtro = 'ativos'): array
     {
-        $whereExtra   = $filtro === 'bloqueados' ? 'AND par.bloqueado_a_partir IS NOT NULL' : '';
+        $whereExtra   = match ($filtro) {
+            'ativos' => 'AND par.bloqueado_a_partir IS NULL',
+            'bloqueados' => 'AND par.bloqueado_a_partir IS NOT NULL',
+            default      => '',
+        };
+
+        //$whereExtra   = $filtro === 'bloqueados' ? 'AND par.bloqueado_a_partir IS NOT NULL' : '';
         $havingClause = match ($filtro) {
             'concluidos' => 'HAVING parcelas_pendentes = 0',
             'ativos'     => 'HAVING parcelas_pendentes > 0',
