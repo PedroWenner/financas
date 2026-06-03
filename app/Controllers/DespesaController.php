@@ -75,7 +75,7 @@ class DespesaController
     public function criar(): void
     {
         $uid = Auth::id();
-        $ref = $this->refSeguro(Request::getString('ref'));
+        $ref = $this->refSeguro((string) Request::get('ref', ''));
         Response::view('despesas/criar', [
             'titulo'     => 'Nova Despesa',
             'categorias' => $this->categorias->listar($uid, 'despesa'),
@@ -121,7 +121,7 @@ class DespesaController
     {
         $uid     = Auth::id();
         $id      = Request::getInt('id');
-        $ref     = $this->refSeguro(Request::getString('ref'));
+        $ref     = $this->refSeguro((string) Request::get('ref', ''));
         $despesa = $this->model->buscarComJoins($id, $uid);
 
         if (!$despesa) {

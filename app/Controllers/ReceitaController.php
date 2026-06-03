@@ -53,7 +53,7 @@ class ReceitaController
     public function criar(): void
     {
         $uid = Auth::id();
-        $ref = $this->refSeguro(Request::getString('ref'));
+        $ref = $this->refSeguro((string) Request::get('ref', ''));
         Response::view('receitas/criar', [
             'titulo'     => 'Nova Receita',
             'categorias' => $this->categorias->listar($uid, 'receita'),
@@ -92,7 +92,7 @@ class ReceitaController
     {
         $uid     = Auth::id();
         $id      = Request::getInt('id');
-        $ref     = $this->refSeguro(Request::getString('ref'));
+        $ref     = $this->refSeguro((string) Request::get('ref', ''));
         $receita = $this->model->findById($id, $uid);
 
         if (!$receita) {

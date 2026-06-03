@@ -117,7 +117,7 @@ $refUrl = urlencode('/receitas?' . $_qs);
                             <form method="POST" action="/receitas/excluir" style="display:inline;">
                                 <?= CsrfHelper::field() ?>
                                 <input type="hidden" name="id" value="<?= $r['id'] ?>">
-                                <input type="hidden" name="ref" value="<?= urldecode($refUrl) ?>">
+                                <input type="hidden" name="ref" value="<?= e(urldecode($refUrl)) ?>">
                                 <button type="submit" class="btn btn-danger btn-sm" title="Excluir"
                                         data-confirm="Excluir a receita '<?= addslashes(e($r['descricao'])) ?>'?">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
