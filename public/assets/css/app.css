@@ -464,6 +464,35 @@ tbody tr:hover { background: var(--surface-2); }
 
 .td-actions { display: flex; gap: 6px; align-items: center; }
 
+/* ── Ordenação de tabelas ── */
+thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+    padding-right: 28px;
+    position: relative;
+    transition: color .15s, background .15s;
+}
+
+thead th.sortable:hover {
+    color: var(--text);
+    background: var(--border);
+}
+
+thead th.sortable::after {
+    content: '↕';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: .25;
+    font-size: .8em;
+}
+
+thead th.sort-asc::after  { content: '↑'; opacity: .85; color: var(--primary); }
+thead th.sort-desc::after { content: '↓'; opacity: .85; color: var(--primary); }
+thead th.sort-asc,
+thead th.sort-desc { color: var(--primary); }
+
 /* ── Badges ── */
 .badge {
     display: inline-flex;

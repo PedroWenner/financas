@@ -173,6 +173,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ──────────────────────────────────────────
+    // Ordenação de tabelas
+    // ──────────────────────────────────────────
+    initTableSort();
+
+    // ──────────────────────────────────────────
     // Atualizar ícone do tema ao carregar
     // ──────────────────────────────────────────
     const temaIcon = document.getElementById('tema-icon');
@@ -239,6 +244,74 @@ function parseMoedaBR(str) {
     return parseFloat(
         str.replace(/\./g, '').replace(',', '.')
     ) || 0;
+}
+
+// ──────────────────────────────────────────────
+// Ordenação de Tabelas
+// ──────────────────────────────────────────────
+function initTableSort() {
+    document.querySelectorAll('.table-wrapper table').forEach(table => {
+        table.querySelectorAll('thead th').forEach((th, colIndex) => {
+            const label = th.textContent.trim().toLowerCase();
+            if (label === 'ações' || label === 'ação' || th.dataset.noSort !== undefined) return;
+
+            th.classList.add('sortable');
+            th.addEventListener('click', () => _sortTable(table, th, colIndex));
+        });
+    });
+}
+
+function _parseCellValue(td) {
+    const text = td.textContent.trim();
+
+    // Moeda: R$ 1.234,56
+    if (/^R\$\s*[\d.,]+$/.test(text)) {
+        return { type: 'number', value: parseFloat(text.replace(/[R$\s.]/g, '').replace(',', '.')) };
+    }
+
+    // Data: dd/mm/yyyy
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(text)) {
+        const [d, m, y] = text.split('/');
+        return { type: 'date', value: new Date(+y, +m - 1, +d).getTime() };
+    }
+
+    // Número simples
+    const num = parseFloat(text.replace(',', '.'));
+    if (!isNaN(num) && text !== '') {
+        return { type: 'number', value: num };
+    }
+
+    return { type: 'text', value: text.toLowerCase() };
+}
+
+function _sortTable(table, clickedTh, colIndex) {
+    const tbody   = table.querySelector('tbody');
+    if (!tbody) return;
+    const rows    = Array.from(tbody.querySelectorAll('tr'));
+    const isAsc   = clickedTh.classList.contains('sort-asc');
+
+    table.querySelectorAll('thead th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+    clickedTh.classList.add(isAsc ? 'sort-desc' : 'sort-asc');
+
+    rows.sort((a, b) => {
+        const cellA = a.querySelectorAll('td')[colIndex];
+        const cellB = b.querySelectorAll('td')[colIndex];
+        if (!cellA || !cellB) return 0;
+
+        const vA = _parseCellValue(cellA);
+        const vB = _parseCellValue(cellB);
+
+        let cmp = 0;
+        if (vA.type !== 'text' && vB.type !== 'text') {
+            cmp = vA.value - vB.value;
+        } else {
+            cmp = String(vA.value).localeCompare(String(vB.value), 'pt-BR');
+        }
+
+        return isAsc ? -cmp : cmp;
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
 }
 
 function calcularParcelas() {
