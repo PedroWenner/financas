@@ -75,11 +75,13 @@ class DespesaController
     public function criar(): void
     {
         $uid = Auth::id();
+        $ref = $this->refSeguro(Request::getString('ref'));
         Response::view('despesas/criar', [
             'titulo'     => 'Nova Despesa',
             'categorias' => $this->categorias->listar($uid, 'despesa'),
             'cartoes'    => $this->cartoes->listar($uid),
             'old'        => ['data' => date('Y-m-d'), 'tipo' => 'variavel'],
+            'ref'        => $ref,
         ]);
     }
 
@@ -88,6 +90,7 @@ class DespesaController
     {
         CsrfHelper::check();
         $uid   = Auth::id();
+        $ref   = $this->refSeguro(Request::post('ref', ''));
         $dados = $this->extrairDados();
         $erros = $this->validar($dados);
 
@@ -98,13 +101,18 @@ class DespesaController
                 'cartoes'    => $this->cartoes->listar($uid),
                 'errors'     => $erros,
                 'old'        => $dados,
+                'ref'        => $ref,
             ]);
             return;
         }
 
         $this->model->criar($uid, $dados);
-        ['mes' => $mes, 'ano' => $ano] = $this->mesFatura($dados, $uid);
-        $url = '/despesas?mes=' . $mes . '&ano=' . $ano;
+        if ($ref) {
+            $url = $ref;
+        } else {
+            ['mes' => $mes, 'ano' => $ano] = $this->mesFatura($dados, $uid);
+            $url = '/despesas?mes=' . $mes . '&ano=' . $ano;
+        }
         Response::redirectWith($url, 'success', 'Despesa cadastrada com sucesso!');
     }
 
@@ -113,10 +121,11 @@ class DespesaController
     {
         $uid     = Auth::id();
         $id      = Request::getInt('id');
+        $ref     = $this->refSeguro(Request::getString('ref'));
         $despesa = $this->model->buscarComJoins($id, $uid);
 
         if (!$despesa) {
-            Response::redirectWith('/despesas', 'error', 'Despesa não encontrada.');
+            Response::redirectWith($ref ?: '/despesas', 'error', 'Despesa não encontrada.');
         }
 
         Response::view('despesas/editar', [
@@ -124,6 +133,7 @@ class DespesaController
             'despesa'    => $despesa,
             'categorias' => $this->categorias->listar($uid, 'despesa'),
             'cartoes'    => $this->cartoes->listar($uid),
+            'ref'        => $ref,
         ]);
     }
 
@@ -133,6 +143,7 @@ class DespesaController
         CsrfHelper::check();
         $uid   = Auth::id();
         $id    = (int) Request::post('id', 0);
+        $ref   = $this->refSeguro(Request::post('ref', ''));
         $dados = $this->extrairDados();
         $erros = $this->validar($dados);
 
@@ -144,13 +155,18 @@ class DespesaController
                 'cartoes'    => $this->cartoes->listar($uid),
                 'errors'     => $erros,
                 'old'        => $dados,
+                'ref'        => $ref,
             ]);
             return;
         }
 
         $ok = $this->model->atualizar($id, $uid, $dados);
-        ['mes' => $mes, 'ano' => $ano] = $this->mesFatura($dados, $uid);
-        $url = '/despesas?mes=' . $mes . '&ano=' . $ano;
+        if ($ref) {
+            $url = $ref;
+        } else {
+            ['mes' => $mes, 'ano' => $ano] = $this->mesFatura($dados, $uid);
+            $url = '/despesas?mes=' . $mes . '&ano=' . $ano;
+        }
         Response::redirectWith($url, $ok ? 'success' : 'info', $ok ? 'Despesa atualizada!' : 'Nenhuma alteração.');
     }
 
@@ -181,6 +197,12 @@ class DespesaController
     // ──────────────────────────────────────────────
     // Privados
     // ──────────────────────────────────────────────
+
+    private function refSeguro(string $ref): string
+    {
+        $ref = trim($ref);
+        return (str_starts_with($ref, '/') && !str_starts_with($ref, '//')) ? $ref : '';
+    }
 
     /** Monta URL de retorno preservando mês/ano e filtros ativos do POST. */
     private function urlRetorno(): string

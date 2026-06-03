@@ -1,6 +1,6 @@
 <div style="max-width:720px;">
     <div class="mb-3">
-        <a href="/despesas" class="btn btn-secondary btn-sm">← Voltar</a>
+        <a href="<?= e($ref ?: '/despesas') ?>" class="btn btn-secondary btn-sm">← Voltar</a>
     </div>
 
     <div class="card">
@@ -110,9 +110,10 @@
                               placeholder="Informações adicionais..."><?= e($old['observacoes'] ?? '') ?></textarea>
                 </div>
 
+                <input type="hidden" name="ref" value="<?= e($ref ?? '') ?>">
                 <div class="d-flex gap-2 mt-2">
                     <button type="submit" class="btn btn-primary">Salvar Despesa</button>
-                    <a href="/despesas" class="btn btn-secondary">Cancelar</a>
+                    <a href="<?= e($ref ?: '/despesas') ?>" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
         </div>

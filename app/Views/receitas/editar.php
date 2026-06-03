@@ -1,6 +1,6 @@
 <div style="max-width:680px;">
     <div class="mb-3">
-        <a href="/receitas" class="btn btn-secondary btn-sm">← Voltar</a>
+        <a href="<?= e($ref ?: '/receitas') ?>" class="btn btn-secondary btn-sm">← Voltar</a>
     </div>
 
     <div class="card">
@@ -72,9 +72,10 @@
                     <textarea id="observacoes" name="observacoes" class="form-control" rows="3"><?= e($old['observacoes'] ?? $receita['observacoes'] ?? '') ?></textarea>
                 </div>
 
+                <input type="hidden" name="ref" value="<?= e($ref ?? '') ?>">
                 <div class="d-flex gap-2 mt-2">
                     <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    <a href="/receitas" class="btn btn-secondary">Cancelar</a>
+                    <a href="<?= e($ref ?: '/receitas') ?>" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
         </div>

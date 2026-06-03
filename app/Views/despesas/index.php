@@ -16,6 +16,7 @@ if ($situacao !== '')   $qsFiltros .= '&situacao=' . urlencode($situacao);
 function pagUrl(string $base, string $qs, int $p): string {
     return $base . '?' . $qs . ($p > 1 ? '&pag=' . $p : '');
 }
+$refUrl = urlencode('/despesas?' . $qsFiltros);
 ?>
 
 <!-- Cabeçalho -->
@@ -28,7 +29,7 @@ function pagUrl(string $base, string $qs, int $p): string {
             <a href="<?= $baseUrl ?>" class="btn btn-outline btn-sm">Hoje</a>
         <?php endif; ?>
     </div>
-    <a href="/despesas/criar" class="btn btn-primary">+ Nova Despesa</a>
+    <a href="/despesas/criar?ref=<?= $refUrl ?>" class="btn btn-primary">+ Nova Despesa</a>
 </div>
 
 <!-- Cards de Resumo -->
@@ -106,7 +107,7 @@ function pagUrl(string $base, string $qs, int $p): string {
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
             <h3>Nenhuma despesa neste período</h3>
             <p>Adicione sua primeira despesa do mês.</p>
-            <div class="mt-2"><a href="/despesas/criar" class="btn btn-primary">+ Nova Despesa</a></div>
+            <div class="mt-2"><a href="/despesas/criar?ref=<?= $refUrl ?>" class="btn btn-primary">+ Nova Despesa</a></div>
         </div>
     </div>
 <?php else: ?>
@@ -177,7 +178,7 @@ function pagUrl(string $base, string $qs, int $p): string {
                                 </button>
                             </form>
                             <?php if ($d['tipo'] !== 'fixa'): ?>
-                                <a href="/despesas/editar?id=<?= $d['id'] ?>" class="btn btn-secondary btn-sm" title="Editar">
+                                <a href="/despesas/editar?id=<?= $d['id'] ?>&ref=<?= $refUrl ?>" class="btn btn-secondary btn-sm" title="Editar">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
                             <?php endif; ?>

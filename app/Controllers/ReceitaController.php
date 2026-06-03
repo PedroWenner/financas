@@ -53,9 +53,11 @@ class ReceitaController
     public function criar(): void
     {
         $uid = Auth::id();
+        $ref = $this->refSeguro(Request::getString('ref'));
         Response::view('receitas/criar', [
             'titulo'     => 'Nova Receita',
             'categorias' => $this->categorias->listar($uid, 'receita'),
+            'ref'        => $ref,
         ]);
     }
 
@@ -64,6 +66,7 @@ class ReceitaController
     {
         CsrfHelper::check();
         $uid = Auth::id();
+        $ref = $this->refSeguro(Request::post('ref', ''));
 
         $dados = $this->extrairDados();
         $erros = $this->validar($dados);
@@ -74,33 +77,33 @@ class ReceitaController
                 'categorias' => $this->categorias->listar($uid, 'receita'),
                 'errors'     => $erros,
                 'old'        => $dados,
+                'ref'        => $ref,
             ]);
             return;
         }
 
         $this->model->criar($uid, $dados);
-        Response::redirectWith(
-            '/receitas?mes=' . date('n') . '&ano=' . date('Y'),
-            'success',
-            'Receita cadastrada com sucesso!'
-        );
+        $url = $ref ?: '/receitas?mes=' . date('n') . '&ano=' . date('Y');
+        Response::redirectWith($url, 'success', 'Receita cadastrada com sucesso!');
     }
 
     /** GET /receitas/editar?id=X */
     public function editar(): void
     {
-        $uid    = Auth::id();
-        $id     = Request::getInt('id');
+        $uid     = Auth::id();
+        $id      = Request::getInt('id');
+        $ref     = $this->refSeguro(Request::getString('ref'));
         $receita = $this->model->findById($id, $uid);
 
         if (!$receita) {
-            Response::redirectWith('/receitas', 'error', 'Receita não encontrada.');
+            Response::redirectWith($ref ?: '/receitas', 'error', 'Receita não encontrada.');
         }
 
         Response::view('receitas/editar', [
             'titulo'     => 'Editar Receita',
             'receita'    => $receita,
             'categorias' => $this->categorias->listar($uid, 'receita'),
+            'ref'        => $ref,
         ]);
     }
 
@@ -110,6 +113,7 @@ class ReceitaController
         CsrfHelper::check();
         $uid = Auth::id();
         $id  = (int) Request::post('id', 0);
+        $ref = $this->refSeguro(Request::post('ref', ''));
 
         $dados = $this->extrairDados();
         $erros = $this->validar($dados);
@@ -121,12 +125,13 @@ class ReceitaController
                 'categorias' => $this->categorias->listar($uid, 'receita'),
                 'errors'     => $erros,
                 'old'        => $dados,
+                'ref'        => $ref,
             ]);
             return;
         }
 
-        $ok = $this->model->atualizar($id, $uid, $dados);
-        $url = '/receitas?mes=' . date('n') . '&ano=' . date('Y');
+        $ok  = $this->model->atualizar($id, $uid, $dados);
+        $url = $ref ?: '/receitas?mes=' . date('n') . '&ano=' . date('Y');
         Response::redirectWith($url, $ok ? 'success' : 'info', $ok ? 'Receita atualizada!' : 'Nenhuma alteração.');
     }
 
@@ -136,14 +141,21 @@ class ReceitaController
         CsrfHelper::check();
         $uid = Auth::id();
         $id  = (int) Request::post('id', 0);
+        $ref = $this->refSeguro(Request::post('ref', ''));
 
         $this->model->excluir($id, $uid);
-        Response::redirectWith('/receitas', 'success', 'Receita removida.');
+        Response::redirectWith($ref ?: '/receitas', 'success', 'Receita removida.');
     }
 
     // ──────────────────────────────────────────────
     // Privados
     // ──────────────────────────────────────────────
+
+    private function refSeguro(string $ref): string
+    {
+        $ref = trim($ref);
+        return (str_starts_with($ref, '/') && !str_starts_with($ref, '//')) ? $ref : '';
+    }
 
     private function extrairDados(): array
     {
