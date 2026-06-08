@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($titulo ?? 'AlcatechFinanças') ?> — <?= APP_NAME ?></title>
     <link rel="stylesheet" href="/assets/css/app.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Alcatech Finanças">
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
     <style>
         body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); }
         .auth-wrapper { width: 100%; max-width: 420px; padding: 20px; }
@@ -41,5 +48,10 @@
     <?php echo $content; ?>
 </div>
 <script src="/assets/js/app.js"></script>
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+    }
+</script>
 </body>
 </html>
