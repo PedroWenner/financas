@@ -82,6 +82,12 @@ $router->add('POST', '/categorias/editar', 'CategoriaController@update');
 $router->add('POST', '/categorias/excluir','CategoriaController@destroy');
 
 // ──────────────────────────────────────────────
+// Chat IA
+// ──────────────────────────────────────────────
+$router->add('POST', '/api/chat',           'ChatController@send');
+$router->add('POST', '/api/chat/confirmar', 'ChatController@confirmar');
+
+// ──────────────────────────────────────────────
 // Relatórios
 // ──────────────────────────────────────────────
 $router->add('GET', '/relatorios', 'RelatorioController@index');

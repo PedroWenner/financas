@@ -26,6 +26,11 @@ if (APP_ENV === 'development') {
 }
 
 // ──────────────────────────────────────────────
+// Integrações externas
+// ──────────────────────────────────────────────
+define('GROQ_API_KEY', getenv('GROQ_API_KEY') ?: '');
+
+// ──────────────────────────────────────────────
 // Timezone e locale
 // ──────────────────────────────────────────────
 date_default_timezone_set('America/Sao_Paulo');

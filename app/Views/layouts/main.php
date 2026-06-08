@@ -6,6 +6,7 @@
     <title><?= e($titulo ?? 'Dashboard') ?> — <?= APP_NAME ?></title>
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <meta name="csrf-token" content="<?= CsrfHelper::token() ?>">
     <script>
         (function(){
             const t = localStorage.getItem('tema') || 'light';
@@ -133,8 +134,32 @@
     </div>
 </div>
 
+<!-- Chat IA Widget -->
+<button id="chat-fab" title="Lançamento rápido com IA" aria-label="Abrir chat IA">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+<div id="chat-modal" class="chat-modal" aria-hidden="true">
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Lançamento Rápido</span>
+        </div>
+        <button id="chat-close" aria-label="Fechar chat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div id="chat-messages" role="log" aria-live="polite"></div>
+    <div class="chat-input-area">
+        <input id="chat-input" type="text" placeholder="Ex: gastei 80 no mercado ontem…" autocomplete="off" />
+        <button id="chat-send" aria-label="Enviar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script src="/assets/js/app.js"></script>
+<script src="/assets/js/chat-widget.js"></script>
 <?php if (!empty($scripts)): ?>
     <?php foreach ($scripts as $script): ?>
         <script src="<?= e($script) ?>"></script>
