@@ -876,7 +876,7 @@ input[type="radio"]:disabled {
 /* ── Chat IA Widget ── */
 #chat-fab {
     position: fixed;
-    bottom: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     right: 24px;
     z-index: 1000;
     width: 52px;
@@ -1063,16 +1063,16 @@ input[type="radio"]:disabled {
 #chat-send:hover { background: var(--primary-dark); }
 #chat-send:disabled, #chat-input:disabled { opacity: .6; cursor: not-allowed; }
 
-/* Safe area para barra de navegação do Android */
-#chat-fab {
-    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-}
-
-@media (max-width: 480px) {
-    #chat-fab { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: 16px; }
+@media (max-width: 1024px) {
+    #chat-fab {
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        right: 16px;
+    }
     .chat-modal {
         bottom: calc(78px + env(safe-area-inset-bottom, 0px));
-        right: 8px; left: 8px; width: auto;
+        right: 8px;
+        left: 8px;
+        width: auto;
         height: calc(100vh - 140px - env(safe-area-inset-bottom, 0px));
         max-height: calc(100vh - 140px);
     }
