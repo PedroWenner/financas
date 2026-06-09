@@ -112,7 +112,7 @@ $refUrl = urlencode('/despesas?' . $qsFiltros);
     </div>
 <?php else: ?>
     <div class="table-wrapper">
-        <table>
+        <table class="table-despesas">
             <thead>
                 <tr>
                     <th>Data</th>

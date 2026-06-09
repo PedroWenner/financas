@@ -76,7 +76,7 @@ $refUrl = urlencode('/receitas?' . $_qs);
     </div>
 <?php else: ?>
     <div class="table-wrapper">
-        <table>
+        <table class="table-receitas">
             <thead>
                 <tr>
                     <th>Data</th>
