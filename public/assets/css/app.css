@@ -668,9 +668,7 @@ thead th.sort-desc { color: var(--primary); }
 /* ── Responsividade ── */
 @media (max-width: 1024px) {
     .dashboard-grid.three { grid-template-columns: 1fr 1fr; }
-}
 
-@media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
     }
@@ -1080,22 +1078,3 @@ input[type="radio"]:disabled {
     }
 }
 
-/* Modo standalone (TWA/PWA instalado) — sempre usar layout mobile */
-html.pwa-mode .sidebar {
-    transform: translateX(-100%);
-    z-index: 200;
-}
-html.pwa-mode .sidebar.open {
-    transform: translateX(0);
-    box-shadow: var(--shadow-lg);
-}
-html.pwa-mode .sidebar-overlay.open { display: block; }
-html.pwa-mode .main-content { margin-left: 0 !important; }
-html.pwa-mode .hamburger { display: flex !important; }
-html.pwa-mode .page-body { padding: 16px; }
-html.pwa-mode .topbar { padding: 0 16px; }
-html.pwa-mode .form-row.cols-2,
-html.pwa-mode .form-row.cols-3 { grid-template-columns: 1fr; }
-html.pwa-mode .stats-grid { grid-template-columns: 1fr 1fr; }
-html.pwa-mode thead th:nth-child(n+5),
-html.pwa-mode tbody td:nth-child(n+5) { display: none; }
