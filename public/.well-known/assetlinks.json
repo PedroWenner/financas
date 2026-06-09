@@ -2,7 +2,7 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "br.com.alcati.financas",
-    "sha256_cert_fingerprints": ["PREENCHER_APOS_GERAR_APK_NO_PWABUILDER"]
+    "package_name": "br.com.alcati.financa.twa",
+    "sha256_cert_fingerprints": ["17:1C:89:25:AC:9B:35:BC:D7:DB:A9:98:3C:7C:15:FF:60:1C:34:4F:E9:3C:6C:59:FC:5C:90:7F:1C:71:6B:1C"]
   }
 }]
