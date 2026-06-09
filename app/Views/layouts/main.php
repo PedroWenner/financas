@@ -18,6 +18,9 @@
         (function(){
             const t = localStorage.getItem('tema') || 'light';
             document.documentElement.setAttribute('data-theme', t);
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+                document.documentElement.classList.add('pwa-mode');
+            }
         })();
     </script>
 </head>
