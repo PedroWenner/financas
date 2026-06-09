@@ -1,4 +1,5 @@
 # Variaveis de ambiente (com senhas reais)
+.env
 .env.local
 publish/config/.env.producao
 
