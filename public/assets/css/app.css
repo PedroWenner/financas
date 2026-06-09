@@ -1065,7 +1065,35 @@ input[type="radio"]:disabled {
 #chat-send:hover { background: var(--primary-dark); }
 #chat-send:disabled, #chat-input:disabled { opacity: .6; cursor: not-allowed; }
 
+/* Safe area para barra de navegação do Android */
+#chat-fab {
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
 @media (max-width: 480px) {
-    #chat-fab { bottom: 16px; right: 16px; }
-    .chat-modal { bottom: 78px; right: 8px; left: 8px; width: auto; }
+    #chat-fab { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: 16px; }
+    .chat-modal {
+        bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+        right: 8px; left: 8px; width: auto;
+        height: calc(100vh - 140px - env(safe-area-inset-bottom, 0px));
+        max-height: calc(100vh - 140px);
+    }
+}
+
+/* Modo standalone (TWA/PWA instalado) — sempre usar layout mobile */
+@media (display-mode: standalone) {
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 200;
+    }
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-lg);
+    }
+    .sidebar-overlay.open { display: block; }
+    .main-content { margin-left: 0 !important; }
+    .hamburger { display: flex !important; }
+    #chat-fab {
+        bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    }
 }
