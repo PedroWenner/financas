@@ -1214,25 +1214,51 @@ input[type="radio"]:disabled {
 /* ── Relatórios mobile ── */
 @media (max-width: 1024px) {
 
-    /* Filtros de período: selects em linha */
+    /* Linha principal dos filtros: empilha tudo verticalmente */
+    #form-relatorio .card-body > .d-flex:first-child {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+
+    /* Botões Período (Anual/Mensal/Intervalo) em linha completa */
+    #form-relatorio .card-body > .d-flex:first-child > .d-flex {
+        flex-shrink: unset;
+        flex-wrap: wrap;
+    }
+
+    /* Seletores de mês/ano ocupam espaço disponível */
     #filtro-anual,
     #filtro-mensal,
     #filtro-periodo {
         flex-wrap: wrap;
-        width: 100%;
+        gap: 6px;
     }
     #filtro-anual select,
     #filtro-mensal select,
     #filtro-periodo select {
-        flex: 1;
+        flex: 1 1 120px;
         min-width: 0;
-        width: auto !important;
+        width: 100% !important;
     }
 
-    /* Botões Aplicar e PDF em largura total */
-    #form-relatorio .card-body > .d-flex > button[type="submit"],
-    #btn-pdf {
-        flex: 1 1 auto;
+    /* Esconde o spacer flex */
+    #form-relatorio [style*="flex:1;min-width:0"] { display: none !important; }
+
+    /* Botões PDF e Aplicar em linha, cada um metade */
+    #btn-pdf,
+    #form-relatorio button[type="submit"] {
+        flex: 1 1 0;
+    }
+
+    /* Agrupa botões PDF+Aplicar na mesma linha */
+    #btn-pdf { order: 1; }
+    #form-relatorio button[type="submit"] { order: 2; }
+
+    /* Segunda linha (Tipos + Cartão): empilha */
+    #form-relatorio .d-flex.flex-wrap.gap-2 {
+        flex-direction: column;
+        gap: 10px !important;
     }
 
     /* Gráfico comparativo menor no mobile */
