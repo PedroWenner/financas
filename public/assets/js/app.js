@@ -324,3 +324,46 @@ function calcularParcelas() {
         preview.textContent = nParc + 'x de ' + formatMoeda(valorParc);
     }
 }
+
+// ──────────────────────────────────────────────
+// Dropdown de ações mobile
+// ──────────────────────────────────────────────
+function initMobileActions() {
+    if (window.innerWidth > 1024) return;
+
+    document.querySelectorAll('.td-actions').forEach(function (actions) {
+        const btns = Array.from(actions.children);
+        if (btns.length < 2) return;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'mob-actions-wrap';
+
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'btn btn-secondary btn-sm mob-actions-trigger';
+        trigger.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
+        trigger.title = 'Ações';
+
+        const menu = document.createElement('div');
+        menu.className = 'mob-actions-menu';
+
+        btns.forEach(function (btn) { menu.appendChild(btn); });
+
+        trigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.mob-actions-menu.open').forEach(function (m) { m.classList.remove('open'); });
+            if (!isOpen) menu.classList.add('open');
+        });
+
+        wrap.appendChild(trigger);
+        wrap.appendChild(menu);
+        actions.appendChild(wrap);
+    });
+
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.mob-actions-menu.open').forEach(function (m) { m.classList.remove('open'); });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initMobileActions);

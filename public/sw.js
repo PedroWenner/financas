@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const SHELL_CACHE   = 'shell-' + CACHE_VERSION;
 const STATIC_ASSETS = [
     '/assets/css/app.css',

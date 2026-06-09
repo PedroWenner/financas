@@ -1164,3 +1164,50 @@ input[type="radio"]:disabled {
     }
 }
 
+/* ── Filtros mobile ── */
+@media (max-width: 1024px) {
+    .card .form-row {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .card .form-row > :last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ── Dropdown de ações mobile ── */
+.mob-actions-wrap {
+    position: relative;
+}
+.mob-actions-trigger {
+    min-height: 36px;
+    min-width: 36px;
+    padding: 6px;
+}
+.mob-actions-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 4px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 500;
+    min-width: 150px;
+    overflow: hidden;
+}
+.mob-actions-menu.open { display: flex; flex-direction: column; }
+.mob-actions-menu .btn,
+.mob-actions-menu form { width: 100%; }
+.mob-actions-menu .btn {
+    border-radius: 0;
+    justify-content: flex-start;
+    padding: 10px 14px;
+    font-size: .875rem;
+    border: none;
+    border-bottom: 1px solid var(--border);
+}
+.mob-actions-menu .btn:last-child,
+.mob-actions-menu form:last-child .btn { border-bottom: none; }
+.mob-actions-menu form .btn { border-radius: 0; }
+
