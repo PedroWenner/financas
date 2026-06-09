@@ -1211,3 +1211,58 @@ input[type="radio"]:disabled {
 .mob-actions-menu form:last-child .btn { border-bottom: none; }
 .mob-actions-menu form .btn { border-radius: 0; }
 
+/* ── Relatórios mobile ── */
+@media (max-width: 1024px) {
+
+    /* Filtros de período: selects em linha */
+    #filtro-anual,
+    #filtro-mensal,
+    #filtro-periodo {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    #filtro-anual select,
+    #filtro-mensal select,
+    #filtro-periodo select {
+        flex: 1;
+        min-width: 0;
+        width: auto !important;
+    }
+
+    /* Botões Aplicar e PDF em largura total */
+    #form-relatorio .card-body > .d-flex > button[type="submit"],
+    #btn-pdf {
+        flex: 1 1 auto;
+    }
+
+    /* Gráfico comparativo menor no mobile */
+    .chart-container[style*="height:300px"] {
+        height: 200px !important;
+    }
+
+    /* Esconde coluna Economia na tabela mensal */
+    .rel-col-economia { display: none; }
+
+    /* Tabela de relatório: linhas com mais padding */
+    .table-relatorio td,
+    .table-relatorio th {
+        padding: 10px 8px;
+        font-size: .82rem;
+    }
+
+    /* Modal de itens: ocupa toda a tela */
+    #modal-itens-card .modal {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+    #modal-itens-card.open {
+        align-items: flex-end;
+    }
+}
+

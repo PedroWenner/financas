@@ -285,14 +285,14 @@ if ($modo === 'anual') {
         <span class="card-title">Evolução Mensal</span>
     </div>
     <div class="table-wrapper">
-        <table>
+        <table class="table-relatorio">
             <thead>
                 <tr>
                     <th>Mês</th>
                     <th class="text-right">Receitas</th>
                     <th class="text-right">Despesas</th>
                     <th class="text-right">Saldo</th>
-                    <th class="text-right">Economia</th>
+                    <th class="text-right rel-col-economia">Economia</th>
                 </tr>
             </thead>
             <tbody>
@@ -305,7 +305,7 @@ if ($modo === 'anual') {
                     <td class="text-right fw-600 <?= $row['saldo'] >= 0 ? 'text-success' : 'text-danger' ?>">
                         <?= moeda($row['saldo']) ?>
                     </td>
-                    <td class="text-right fs-sm <?= $eco >= 0 ? 'text-success' : 'text-danger' ?>">
+                    <td class="text-right fs-sm rel-col-economia <?= $eco >= 0 ? 'text-success' : 'text-danger' ?>">
                         <?= number_format($eco, 1, ',', '.') ?>%
                     </td>
                 </tr>
@@ -317,7 +317,7 @@ if ($modo === 'anual') {
                     <td class="text-right text-success"><?= moeda($totalReceitas) ?></td>
                     <td class="text-right text-danger"><?= moeda($totalDespesas) ?></td>
                     <td class="text-right <?= $saldo >= 0 ? 'text-success' : 'text-danger' ?>"><?= moeda($saldo) ?></td>
-                    <td class="text-right fs-sm <?= $economia >= 0 ? 'text-success' : 'text-danger' ?>">
+                    <td class="text-right fs-sm rel-col-economia <?= $economia >= 0 ? 'text-success' : 'text-danger' ?>">
                         <?= number_format($economia, 1, ',', '.') ?>%
                     </td>
                 </tr>
@@ -446,10 +446,13 @@ if (!empty($porCartaoFiltrado)):
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script>
-const isDark    = () => document.documentElement.getAttribute('data-theme') === 'dark';
-const gridColor = () => isDark() ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)';
-const textColor = () => isDark() ? '#94a3b8' : '#64748b';
-const brlFmt    = v => 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits:2});
+const isDark      = () => document.documentElement.getAttribute('data-theme') === 'dark';
+const gridColor   = () => isDark() ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)';
+const textColor   = () => isDark() ? '#94a3b8' : '#64748b';
+const brlFmt      = v => 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits:2});
+const isMobile    = window.innerWidth <= 1024;
+const legendPos   = isMobile ? 'bottom' : 'right';
+const legendFont  = isMobile ? 10 : 11;
 
 // ── Comparativo Receitas × Despesas ──
 <?php if (!empty($series)): ?>
@@ -538,7 +541,7 @@ const brlFmt    = v => 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFra
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'right', labels: { color: textColor(), padding: 12, boxWidth: 12, font: { size: 11 } } },
+                legend: { position: legendPos, labels: { color: textColor(), padding: 10, boxWidth: 12, font: { size: legendFont } } },
                 tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + brlFmt(ctx.parsed) } }
             }
         }
@@ -568,7 +571,7 @@ const brlFmt    = v => 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFra
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'right', labels: { color: textColor(), padding: 12, boxWidth: 12, font: { size: 11 } } },
+                legend: { position: legendPos, labels: { color: textColor(), padding: 10, boxWidth: 12, font: { size: legendFont } } },
                 tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + brlFmt(ctx.parsed) } }
             }
         }
@@ -676,16 +679,31 @@ function gerarPdf() {
             table.style.display = '';
             vazio.style.display = 'none';
 
-            const th = `<tr>
-                <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Data</th>
-                <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Descrição</th>
-                <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Categoria</th>
-                <th style="padding:10px 16px;text-align:right;font-weight:600;font-size:.8rem;color:var(--text-muted);">Valor</th>
-            </tr>`;
+            const mob = window.innerWidth <= 1024;
+            const th = mob
+                ? `<tr>
+                    <th style="padding:8px 12px;text-align:left;font-weight:600;font-size:.75rem;color:var(--text-muted);">Descrição</th>
+                    <th style="padding:8px 12px;text-align:right;font-weight:600;font-size:.75rem;color:var(--text-muted);">Valor</th>
+                </tr>`
+                : `<tr>
+                    <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Data</th>
+                    <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Descrição</th>
+                    <th style="padding:10px 16px;text-align:left;font-weight:600;font-size:.8rem;color:var(--text-muted);">Categoria</th>
+                    <th style="padding:10px 16px;text-align:right;font-weight:600;font-size:.8rem;color:var(--text-muted);">Valor</th>
+                </tr>`;
             thead.innerHTML = th;
 
             tbody.innerHTML = itens.map((item, i) => {
                 const bg = i % 2 === 0 ? '' : 'background:var(--surface-2);';
+                if (mob) {
+                    return `<tr style="${bg}">
+                        <td style="padding:9px 12px;font-size:.82rem;">
+                            <div style="font-weight:600;">${esc(item.descricao) || '—'}</div>
+                            <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;">${fmtDate(item.data)}</div>
+                        </td>
+                        <td style="padding:9px 12px;text-align:right;font-weight:700;font-size:.88rem;white-space:nowrap;">${brl(item.valor)}</td>
+                    </tr>`;
+                }
                 return `<tr style="${bg}">
                     <td style="padding:9px 16px;white-space:nowrap;font-size:.85rem;">${fmtDate(item.data)}</td>
                     <td style="padding:9px 16px;font-size:.85rem;">${esc(item.descricao) || '<span style="color:var(--text-muted)">—</span>'}</td>
