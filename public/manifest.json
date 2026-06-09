@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "Alcatech Finanças",
   "short_name": "Alcatech",
   "description": "Controle de finanças pessoais — despesas, receitas, cartões e parcelamentos.",
@@ -22,14 +23,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/assets/icons/screenshot-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow"
     }
   ]
 }
