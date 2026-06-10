@@ -17,7 +17,7 @@ class AuthController
     /** GET /login */
     public function loginForm(): void
     {
-        if (Auth::check()) {
+        if (Auth::check() || Auth::checkRememberToken()) {
             Response::redirect('/dashboard');
         }
         Response::view('auth/login', ['titulo' => 'Entrar'], 'auth');
@@ -31,6 +31,8 @@ class AuthController
         $email = trim(Request::post('email', ''));
         $senha = Request::post('senha', '');
 
+        $lembrar = Request::post('lembrar') === '1';
+
         $v = new ValidationHelper(['email' => $email, 'senha' => $senha]);
         $v->required('email', 'E-mail')
           ->email('email', 'E-mail')
@@ -40,7 +42,7 @@ class AuthController
             Response::view('auth/login', [
                 'titulo' => 'Entrar',
                 'errors' => $v->errors(),
-                'old'    => ['email' => $email],
+                'old'    => ['email' => $email, 'lembrar' => $lembrar],
             ], 'auth');
             return;
         }
@@ -49,14 +51,19 @@ class AuthController
 
         if (!$usuario) {
             Response::view('auth/login', [
-                'titulo'   => 'Entrar',
-                'errors'   => ['geral' => 'E-mail ou senha incorretos.'],
-                'old'      => ['email' => $email],
+                'titulo' => 'Entrar',
+                'errors' => ['geral' => 'E-mail ou senha incorretos.'],
+                'old'    => ['email' => $email, 'lembrar' => $lembrar],
             ], 'auth');
             return;
         }
 
         Auth::login($usuario);
+
+        if ($lembrar) {
+            Auth::setRememberToken((int) $usuario['id']);
+        }
+
         Response::redirect('/dashboard');
     }
 

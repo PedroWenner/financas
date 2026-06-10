@@ -23,6 +23,9 @@
         .auth-card h2 { font-size: 1.2rem; margin-bottom: 6px; }
         .auth-card .sub { color: var(--text-muted); font-size: .875rem; margin-bottom: 24px; }
         .auth-footer { text-align: center; margin-top: 20px; font-size: .875rem; color: var(--text-muted); }
+        .auth-remember { margin: 14px 0 4px; }
+        .auth-remember-label { display: flex; align-items: center; gap: 8px; font-size: .875rem; color: var(--text-muted); cursor: pointer; user-select: none; }
+        .auth-remember-label:hover { color: var(--text); }
     </style>
     <script>
         (function(){

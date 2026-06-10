@@ -7,6 +7,11 @@ declare(strict_types=1);
 
 class Auth
 {
+    private const REMEMBER_COOKIE  = 'rememberme';
+    private const REMEMBER_DAYS    = 30;
+
+    // ── Sessão ───────────────────────────────────────────────────────
+
     public static function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -44,10 +49,10 @@ class Auth
         return true;
     }
 
-    /** Redireciona para /login se não autenticado. */
+    /** Redireciona para /login se não autenticado (tenta o cookie antes). */
     public static function requireLogin(): void
     {
-        if (!self::check()) {
+        if (!self::check() && !self::checkRememberToken()) {
             header('Location: /login');
             exit;
         }
@@ -71,9 +76,11 @@ class Auth
         return $_SESSION['user_email'] ?? '';
     }
 
-    /** Encerra a sessão. */
+    /** Encerra a sessão e limpa o cookie de remember-me. */
     public static function logout(): void
     {
+        self::clearRememberToken();
+
         $_SESSION = [];
 
         if (ini_get('session.use_cookies')) {
@@ -86,5 +93,133 @@ class Auth
         }
 
         session_destroy();
+    }
+
+    // ── Remember-me ──────────────────────────────────────────────────
+
+    /**
+     * Gera um token persistente e define o cookie "Lembrar-me".
+     * Deve ser chamado após Auth::login() quando o usuário marcou o checkbox.
+     */
+    public static function setRememberToken(int $uid): void
+    {
+        try {
+            $raw       = base64_encode(random_bytes(32));   // 44 chars, URL-safe enough
+            $hash      = hash('sha256', $raw);
+            $expiresTs = time() + (self::REMEMBER_DAYS * 86400);
+            $expiresAt = date('Y-m-d H:i:s', $expiresTs);
+
+            Database::getInstance()
+                ->prepare("INSERT INTO remember_tokens (usuario_id, token_hash, expires_at) VALUES (:uid, :hash, :exp)")
+                ->execute([':uid' => $uid, ':hash' => $hash, ':exp' => $expiresAt]);
+
+            // Limpa tokens expirados deste usuário (housekeeping)
+            Database::getInstance()
+                ->prepare("DELETE FROM remember_tokens WHERE usuario_id = :uid AND expires_at < NOW()")
+                ->execute([':uid' => $uid]);
+
+            setcookie(self::REMEMBER_COOKIE, $uid . ':' . $raw, [
+                'expires'  => $expiresTs,
+                'path'     => '/',
+                'httponly' => true,
+                'samesite' => 'Strict',
+                'secure'   => self::isHttps(),
+            ]);
+        } catch (\Exception $e) {
+            // Falha silenciosa: o login normal já funcionou, só o remember-me falhou
+        }
+    }
+
+    /**
+     * Verifica o cookie de remember-me e, se válido, faz login automático.
+     * Retorna true se o login automático foi bem-sucedido.
+     */
+    public static function checkRememberToken(): bool
+    {
+        $cookie = $_COOKIE[self::REMEMBER_COOKIE] ?? '';
+        if ($cookie === '') return false;
+
+        $parts = explode(':', $cookie, 2);
+        if (count($parts) !== 2) {
+            self::clearRememberCookie();
+            return false;
+        }
+
+        [$uid, $raw] = $parts;
+        $uid = (int) $uid;
+        if ($uid <= 0 || $raw === '') {
+            self::clearRememberCookie();
+            return false;
+        }
+
+        try {
+            $hash = hash('sha256', $raw);
+            $stmt = Database::getInstance()->prepare(
+                "SELECT rt.id, u.id AS uid, u.nome, u.email
+                 FROM remember_tokens rt
+                 JOIN usuarios u ON u.id = rt.usuario_id
+                 WHERE rt.usuario_id = :uid
+                   AND rt.token_hash = :hash
+                   AND rt.expires_at > NOW()
+                   AND u.ativo = 1
+                 LIMIT 1"
+            );
+            $stmt->execute([':uid' => $uid, ':hash' => $hash]);
+            $row = $stmt->fetch();
+
+            if (!$row) {
+                self::clearRememberCookie();
+                return false;
+            }
+
+            self::login(['id' => $row['uid'], 'nome' => $row['nome'], 'email' => $row['email']]);
+            return true;
+
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Remove o token do banco e apaga o cookie (chamado no logout).
+     */
+    public static function clearRememberToken(): void
+    {
+        $cookie = $_COOKIE[self::REMEMBER_COOKIE] ?? '';
+        if ($cookie === '') return;
+
+        $parts = explode(':', $cookie, 2);
+        if (count($parts) === 2) {
+            [$uid, $raw] = $parts;
+            $uid = (int) $uid;
+            if ($uid > 0 && $raw !== '') {
+                try {
+                    $hash = hash('sha256', $raw);
+                    Database::getInstance()
+                        ->prepare("DELETE FROM remember_tokens WHERE usuario_id = :uid AND token_hash = :hash")
+                        ->execute([':uid' => $uid, ':hash' => $hash]);
+                } catch (\Exception $e) {
+                    // Ignora erros de DB durante logout
+                }
+            }
+        }
+
+        self::clearRememberCookie();
+    }
+
+    private static function clearRememberCookie(): void
+    {
+        setcookie(self::REMEMBER_COOKIE, '', [
+            'expires'  => time() - 86400,
+            'path'     => '/',
+            'httponly' => true,
+            'samesite' => 'Strict',
+            'secure'   => self::isHttps(),
+        ]);
+    }
+
+    private static function isHttps(): bool
+    {
+        return !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
     }
 }

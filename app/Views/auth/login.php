@@ -34,6 +34,14 @@
             <?php endif; ?>
         </div>
 
+        <div class="auth-remember">
+            <label class="auth-remember-label">
+                <input type="checkbox" name="lembrar" value="1"
+                       <?= !empty($old['lembrar']) ? 'checked' : '' ?>>
+                Lembrar-me por 30 dias
+            </label>
+        </div>
+
         <div class="mt-2">
             <button type="submit" class="btn btn-primary btn-block btn-lg">
                 Entrar
