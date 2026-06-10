@@ -1091,6 +1091,62 @@ input[type="radio"]:disabled {
 .chat-btn-cancel  { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
 .chat-btn-cancel:hover { background: var(--border); }
 
+/* Botões de etapa (forma de pagamento, cartão, sim/não) */
+.chat-step-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+.chat-step-btn {
+    padding: 5px 13px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--primary);
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: .78rem;
+    font-weight: 600;
+    transition: background var(--transition), color var(--transition), opacity var(--transition);
+    white-space: nowrap;
+}
+.chat-step-btn:hover:not(:disabled) { background: var(--primary); color: #fff; }
+.chat-step-btn--selected { background: var(--primary); color: #fff; }
+.chat-step-btn--primary  { background: var(--primary); color: #fff; border-color: var(--primary); }
+.chat-step-btn--primary:hover:not(:disabled) { background: var(--primary-dark); border-color: var(--primary-dark); }
+.chat-step-btn--danger   { border-color: var(--danger, #e74c3c); color: var(--danger, #e74c3c); }
+.chat-step-btn--danger:hover:not(:disabled)  { background: var(--danger, #e74c3c); color: #fff; }
+.chat-step-btn:disabled  { opacity: .45; cursor: not-allowed; }
+
+/* Textarea de observação */
+.chat-obs-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: .8rem;
+    font-family: inherit;
+    resize: none;
+    margin-top: 8px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color var(--transition);
+}
+.chat-obs-input:focus { border-color: var(--primary); }
+.chat-obs-input:disabled { opacity: .5; }
+
+/* Resumo final antes da confirmação */
+.chat-resumo {
+    font-size: .8rem;
+    font-family: inherit;
+    white-space: pre-wrap;
+    margin: 0 0 10px;
+    line-height: 1.65;
+    color: var(--text);
+}
+
 /* Typing indicator */
 .chat-typing {
     display: flex !important;
