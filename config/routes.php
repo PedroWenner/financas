@@ -12,6 +12,7 @@ $router->add('POST', '/login',    'AuthController@login');
 $router->add('GET',  '/cadastro', 'AuthController@cadastroForm');
 $router->add('POST', '/cadastro', 'AuthController@cadastro');
 $router->add('GET',  '/sair',     'AuthController@logout');
+$router->add('GET',  '/ping',     'AuthController@ping');
 
 // ──────────────────────────────────────────────
 // Dashboard (requer autenticação)

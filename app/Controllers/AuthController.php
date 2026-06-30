@@ -140,4 +140,16 @@ class AuthController
         Auth::logout();
         Response::redirect('/login');
     }
+
+    /** GET /ping — mantém a sessão viva enquanto o usuário está ativo. */
+    public function ping(): void
+    {
+        header('Content-Type: application/json');
+        if (!Auth::check()) {
+            http_response_code(401);
+            echo json_encode(['ok' => false]);
+            return;
+        }
+        echo json_encode(['ok' => true]);
+    }
 }

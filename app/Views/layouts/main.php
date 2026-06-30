@@ -118,6 +118,10 @@
                 <span class="page-title"><?= e($titulo ?? '') ?></span>
             </div>
             <div class="topbar-right">
+                <span id="session-timer" class="session-timer" title="Tempo restante de sessão">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span id="session-timer-text">--:--</span>
+                </span>
                 <button onclick="toggleTema()" class="btn btn-secondary btn-icon" title="Alternar tema" style="font-size:1.1rem;">
                     <span id="tema-icon">🌙</span>
                 </button>
@@ -167,6 +171,78 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/chat-widget.js"></script>
+<script>
+(function () {
+    const TIMEOUT  = <?= (int) ini_get('session.gc_maxlifetime') ?>;
+    const WARN_AT  = 120;
+    const timerEl  = document.getElementById('session-timer');
+    const textEl   = document.getElementById('session-timer-text');
+
+    let remaining    = TIMEOUT;
+    let warned       = false;
+    let pingDebounce = null;
+
+    function fmt(s) {
+        const h   = Math.floor(s / 3600);
+        const m   = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        if (h > 0) return h + 'h ' + String(m).padStart(2, '0') + 'm';
+        return m + 'm ' + String(sec).padStart(2, '0') + 's';
+    }
+
+    function tick() {
+        remaining--;
+        if (remaining <= 0) {
+            window.location.href = '/login';
+            return;
+        }
+        textEl.textContent = fmt(remaining);
+
+        if (remaining <= WARN_AT && !warned) {
+            warned = true;
+            timerEl.classList.add('session-timer--warn');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sessão expirando',
+                html: 'Sua sessão vai expirar em <b>menos de 2 minutos</b>.<br>Clique em continuar para permanecer conectado.',
+                confirmButtonText: 'Continuar',
+                showCancelButton: true,
+                cancelButtonText: 'Sair',
+                timerProgressBar: true,
+            }).then(function (result) {
+                if (result.isDismissed && result.dismiss === Swal.DismissReason.cancel) {
+                    window.location.href = '/sair';
+                } else {
+                    ping();
+                }
+            });
+        }
+    }
+
+    async function ping() {
+        try {
+            const r = await fetch('/ping', { credentials: 'same-origin' });
+            if (r.status === 401) { window.location.href = '/login'; return; }
+            remaining = TIMEOUT;
+            warned    = false;
+            timerEl.classList.remove('session-timer--warn');
+            textEl.textContent = fmt(remaining);
+        } catch (_) {}
+    }
+
+    function onActivity() {
+        clearTimeout(pingDebounce);
+        pingDebounce = setTimeout(ping, 2000);
+    }
+
+    ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(function (ev) {
+        document.addEventListener(ev, onActivity, { passive: true });
+    });
+
+    textEl.textContent = fmt(remaining);
+    setInterval(tick, 1000);
+})();
+</script>
 <?php if (!empty($scripts)): ?>
     <?php foreach ($scripts as $script): ?>
         <script src="<?= e($script) ?>"></script>

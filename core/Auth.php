@@ -35,18 +35,7 @@ class Auth
     /** Verifica se há sessão válida. */
     public static function check(): bool
     {
-        if (empty($_SESSION['logged_in'])) {
-            return false;
-        }
-
-        // Valida consistência mínima (previne hijacking básico)
-        $currentIp = $_SERVER['REMOTE_ADDR'] ?? '';
-        if (!empty($_SESSION['login_ip']) && $_SESSION['login_ip'] !== $currentIp) {
-            self::logout();
-            return false;
-        }
-
-        return true;
+        return !empty($_SESSION['logged_in']);
     }
 
     /** Redireciona para /login se não autenticado (tenta o cookie antes). */
@@ -125,7 +114,7 @@ class Auth
                 'samesite' => 'Strict',
                 'secure'   => self::isHttps(),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // Falha silenciosa: o login normal já funcionou, só o remember-me falhou
         }
     }
@@ -172,10 +161,28 @@ class Auth
                 return false;
             }
 
+            // Rotaciona o token a cada uso para invalidar cópias roubadas
+            $newRaw       = base64_encode(random_bytes(32));
+            $newHash      = hash('sha256', $newRaw);
+            $newExpiresTs = time() + (self::REMEMBER_DAYS * 86400);
+            $newExpiresAt = date('Y-m-d H:i:s', $newExpiresTs);
+
+            Database::getInstance()
+                ->prepare("UPDATE remember_tokens SET token_hash = :hash, expires_at = :exp WHERE id = :id")
+                ->execute([':hash' => $newHash, ':exp' => $newExpiresAt, ':id' => $row['id']]);
+
+            setcookie(self::REMEMBER_COOKIE, $row['uid'] . ':' . $newRaw, [
+                'expires'  => $newExpiresTs,
+                'path'     => '/',
+                'httponly' => true,
+                'samesite' => 'Strict',
+                'secure'   => self::isHttps(),
+            ]);
+
             self::login(['id' => $row['uid'], 'nome' => $row['nome'], 'email' => $row['email']]);
             return true;
 
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
     }
@@ -198,7 +205,7 @@ class Auth
                     Database::getInstance()
                         ->prepare("DELETE FROM remember_tokens WHERE usuario_id = :uid AND token_hash = :hash")
                         ->execute([':uid' => $uid, ':hash' => $hash]);
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     // Ignora erros de DB durante logout
                 }
             }
