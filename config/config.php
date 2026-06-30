@@ -43,6 +43,6 @@ ini_set('session.cookie_httponly',  '1');
 ini_set('session.use_strict_mode',  '1');
 ini_set('session.gc_maxlifetime',   '7200'); // 2 horas de inatividade
 ini_set('session.cookie_lifetime',  '7200'); // cookie persiste 2h mesmo após fechar o browser
-ini_set('session.cookie_samesite',  'Strict');
+ini_set('session.cookie_samesite',  'Lax');
 // Ativar apenas em HTTPS em produção:
 // ini_set('session.cookie_secure', '1');

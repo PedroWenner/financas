@@ -17,6 +17,23 @@ class Auth
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
+        // Renova o cookie de sessão a cada requisição para que o prazo
+        // corra a partir da última atividade, não do momento do login.
+        if (!empty($_SESSION['logged_in'])) {
+            $lifetime = (int) ini_get('session.cookie_lifetime');
+            if ($lifetime > 0) {
+                $p = session_get_cookie_params();
+                setcookie(session_name(), session_id(), [
+                    'expires'  => time() + $lifetime,
+                    'path'     => $p['path'],
+                    'domain'   => $p['domain'],
+                    'secure'   => $p['secure'],
+                    'httponly' => $p['httponly'],
+                    'samesite' => $p['samesite'],
+                ]);
+            }
+        }
     }
 
     /** Autentica o usuário e inicializa a sessão. */
@@ -111,7 +128,7 @@ class Auth
                 'expires'  => $expiresTs,
                 'path'     => '/',
                 'httponly' => true,
-                'samesite' => 'Strict',
+                'samesite' => 'Lax',
                 'secure'   => self::isHttps(),
             ]);
         } catch (\Exception) {
@@ -175,7 +192,7 @@ class Auth
                 'expires'  => $newExpiresTs,
                 'path'     => '/',
                 'httponly' => true,
-                'samesite' => 'Strict',
+                'samesite' => 'Lax',
                 'secure'   => self::isHttps(),
             ]);
 
@@ -220,7 +237,7 @@ class Auth
             'expires'  => time() - 86400,
             'path'     => '/',
             'httponly' => true,
-            'samesite' => 'Strict',
+            'samesite' => 'Lax',
             'secure'   => self::isHttps(),
         ]);
     }

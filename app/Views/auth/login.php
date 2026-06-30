@@ -59,4 +59,14 @@ function toggleSenha(id) {
     const input = document.getElementById(id);
     input.type = input.type === 'password' ? 'text' : 'password';
 }
+
+// Marca "lembrar-me" automaticamente quando rodando como PWA instalada
+(function () {
+    const isPwa = window.matchMedia('(display-mode: standalone)').matches
+               || window.navigator.standalone === true;
+    if (isPwa) {
+        var cb = document.querySelector('input[name="lembrar"]');
+        if (cb && !cb.checked) cb.checked = true;
+    }
+})();
 </script>
