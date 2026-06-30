@@ -246,11 +246,29 @@ class NlpParser
         $hoje = date('Y-m-d');
         $tn   = $this->normalizar($texto);
 
-        if (str_contains($tn, 'hoje'))          return $hoje;
-        if (str_contains($tn, 'ontem'))         return date('Y-m-d', strtotime('-1 day'));
-        if (str_contains($tn, 'anteontem'))     return date('Y-m-d', strtotime('-2 days'));
+        if (str_contains($tn, 'hoje'))           return $hoje;
+        if (str_contains($tn, 'ontem'))          return date('Y-m-d', strtotime('-1 day'));
+        if (str_contains($tn, 'anteontem'))      return date('Y-m-d', strtotime('-2 days'));
         if (str_contains($tn, 'semana passada')) return date('Y-m-d', strtotime('-7 days'));
 
+        // DD/MM/YYYY explícito
+        if (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $texto, $m)) {
+            [$d, $mo, $y] = [(int) $m[1], (int) $m[2], (int) $m[3]];
+            if (checkdate($mo, $d, $y)) {
+                return sprintf('%04d-%02d-%02d', $y, $mo, $d);
+            }
+        }
+
+        // DD/MM sem ano — usa o ano corrente
+        if (preg_match('/\b(\d{1,2})\/(\d{1,2})\b/', $texto, $m)) {
+            [$d, $mo] = [(int) $m[1], (int) $m[2]];
+            $ano = (int) date('Y');
+            if (checkdate($mo, $d, $ano)) {
+                return sprintf('%04d-%02d-%02d', $ano, $mo, $d);
+            }
+        }
+
+        // "dia 27" / "no dia 27"
         if (preg_match('/(?:no\s+)?dia\s+(\d{1,2})/u', $tn, $m)) {
             $dia = (int) $m[1];
             $mes = (int) date('n');
@@ -280,7 +298,15 @@ class NlpParser
 
     private function extrairDiaVencimento(string $texto): int
     {
-        if (preg_match('/(?:vence|vencimento|dia)\s+(\d{1,2})/iu', $texto, $m)) {
+        // "vencimento em 27", "vence em 27", "vencimento em 27/07"
+        if (preg_match('/(?:vence|vencimento)\s+(?:em\s+)?(\d{1,2})/iu', $texto, $m)) {
+            return min(28, max(1, (int) $m[1]));
+        }
+        if (preg_match('/\bdia\s+(\d{1,2})/iu', $texto, $m)) {
+            return min(28, max(1, (int) $m[1]));
+        }
+        // Fallback: extrai o dia do padrão DD/MM
+        if (preg_match('/\b(\d{1,2})\/\d{1,2}\b/', $texto, $m)) {
             return min(28, max(1, (int) $m[1]));
         }
         return (int) date('d');
@@ -292,6 +318,14 @@ class NlpParser
 
         // Remove verbos de intenção
         $t = preg_replace('/\b(gastei|paguei|comprei|adquiri|recebi|ganhei|entrou|caiu|fui\s+ao?|comi|almocei|jantei|assinei|parcelei|transferi)\b/iu', '', $t);
+
+        // Remove "será (de)?" e "com vencimento (em)?" / "vencimento (em)?"
+        $t = preg_replace('/\bser[aá](?:\s+de)?\s*/iu', '', $t);
+        $t = preg_replace('/\bcom\s+vencimento\s+(?:em\s+)?/iu', '', $t);
+        $t = preg_replace('/\bvencimento\s+(?:em\s+)?/iu', '', $t);
+
+        // Remove datas no formato DD/MM/YYYY e DD/MM
+        $t = preg_replace('/\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/', '', $t);
 
         // Remove padrões de valor (incluindo "de R$X")
         $t = preg_replace('/(?:de\s+)?R?\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?/i', '', $t);
@@ -307,8 +341,9 @@ class NlpParser
         // Remove números avulsos remanescentes
         $t = preg_replace('/\b\d+(?:[.,]\d{1,2})?\b/', '', $t);
 
-        // Remove preposições/artigos no início
-        $t = preg_replace('/^\s*(?:no?|na?|em|de|do|da|para|pro|pra|pelo|pela|num|numa|por|ao?|aos?|[aà]s?|uns?|uma?)\s+/iu', '', trim($t));
+        // Remove preposições/artigos no início e conjunções soltas no fim
+        $t = preg_replace('/^\s*(?:no?|na?|em|de|do|da|para|pro|pra|pelo|pela|num|numa|por|ao?|aos?|[aà]s?|uns?|uma?|com)\s+/iu', '', trim($t));
+        $t = preg_replace('/\s+(?:no?|na?|em|de|do|da|para|pro|pra|com|por|ao?)$/iu', '', $t);
 
         $t = trim(preg_replace('/\s+/', ' ', $t));
 
