@@ -16,6 +16,7 @@ class SqlConsoleController
 
     private SqlConsoleService $service;
     private SqlConsoleLogModel $logModel;
+    private SqlConsoleConsultaModel $consultaModel;
 
     public function __construct()
     {
@@ -26,8 +27,9 @@ class SqlConsoleController
             die('Acesso restrito.');
         }
 
-        $this->service  = new SqlConsoleService();
-        $this->logModel = new SqlConsoleLogModel();
+        $this->service       = new SqlConsoleService();
+        $this->logModel      = new SqlConsoleLogModel();
+        $this->consultaModel = new SqlConsoleConsultaModel();
     }
 
     // ──────────────────────────────────────────────────────────
@@ -97,6 +99,52 @@ class SqlConsoleController
     }
 
     // ──────────────────────────────────────────────────────────
+    // POST /admin/sql/consulta — construtor de consulta (somente leitura)
+    // ──────────────────────────────────────────────────────────
+
+    public function executarConsulta(): void
+    {
+        CsrfHelper::check();
+        $sql = (string) Request::post('sql', '');
+        $this->executarERenderizar($sql, null, true);
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // POST /admin/sql/consulta/salvar — salva o script montado
+    // ──────────────────────────────────────────────────────────
+
+    public function salvarConsulta(): void
+    {
+        CsrfHelper::check();
+
+        $descricao = trim((string) Request::post('descricao', ''));
+        $script    = (string) Request::post('script', '');
+
+        if ($descricao === '' || trim($script) === '') {
+            $this->renderConsole([
+                'erroConsulta' => 'Informe a descrição e monte o script antes de salvar.',
+                'abaAtiva'     => 'consulta',
+            ]);
+            return;
+        }
+
+        $this->consultaModel->salvar(Auth::id(), $descricao, $script);
+        $this->renderConsole(['abaAtiva' => 'consulta']);
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // POST /admin/sql/consulta/excluir — remove um script salvo
+    // ──────────────────────────────────────────────────────────
+
+    public function excluirConsulta(): void
+    {
+        CsrfHelper::check();
+        $id = (int) Request::post('id', 0);
+        $this->consultaModel->excluir($id, Auth::id());
+        $this->renderConsole(['abaAtiva' => 'consulta']);
+    }
+
+    // ──────────────────────────────────────────────────────────
     // POST /admin/sql/migration  — roda um arquivo de migrations/
     // ──────────────────────────────────────────────────────────
 
@@ -125,18 +173,33 @@ class SqlConsoleController
     // Helpers
     // ──────────────────────────────────────────────────────────
 
-    private function executarERenderizar(string $sql, ?string $origemMigration = null): void
+    private function executarERenderizar(string $sql, ?string $origemMigration = null, bool $somenteLeitura = false): void
     {
-        $conn = $_SESSION[self::SESSION_KEY] ?? null;
+        $conn           = $_SESSION[self::SESSION_KEY] ?? null;
+        $abaAtiva       = $somenteLeitura ? 'consulta' : 'livre';
+        $chaveErro      = $somenteLeitura ? 'erroConsulta' : 'erroConexao';
+        $chaveResultado = $somenteLeitura ? 'resultadoConsulta' : 'resultado';
 
         if ($conn === null) {
-            $this->renderConsole(['erroConexao' => 'Conecte a um banco antes de executar comandos.']);
+            $this->renderConsole([$chaveErro => 'Conecte a um banco antes de executar comandos.', 'abaAtiva' => $abaAtiva]);
             return;
         }
 
         if (trim($sql) === '') {
-            $this->renderConsole(['erroConexao' => 'Nenhum comando SQL informado.']);
+            $this->renderConsole([$chaveErro => 'Nenhum comando SQL informado.', 'abaAtiva' => $abaAtiva]);
             return;
+        }
+
+        if ($somenteLeitura) {
+            foreach ($this->service->dividirStatements($sql) as $stmt) {
+                if (!$this->service->somenteLeitura($stmt)) {
+                    $this->renderConsole([
+                        $chaveErro => 'Somente comandos de consulta (SELECT/SHOW/DESCRIBE/EXPLAIN) são permitidos no construtor de consulta.',
+                        'abaAtiva' => $abaAtiva,
+                    ]);
+                    return;
+                }
+            }
         }
 
         try {
@@ -155,10 +218,10 @@ class SqlConsoleController
                     : $this->mensagemErro($resultado)
             );
 
-            $this->renderConsole(['resultado' => $resultado]);
+            $this->renderConsole([$chaveResultado => $resultado, 'abaAtiva' => $abaAtiva]);
         } catch (PDOException $e) {
             $this->logSeguro($conn['host'], $conn['banco'], $sql, 'erro', $e->getMessage());
-            $this->renderConsole(['erroConexao' => 'Falha ao conectar: ' . $e->getMessage()]);
+            $this->renderConsole([$chaveErro => 'Falha ao conectar: ' . $e->getMessage(), 'abaAtiva' => $abaAtiva]);
         }
     }
 
@@ -183,16 +246,21 @@ class SqlConsoleController
         $conn = $_SESSION[self::SESSION_KEY] ?? null;
 
         $dados = array_merge([
-            'titulo'      => 'Console SQL',
-            'conectado'   => $conn !== null,
-            'conn'        => $conn,
-            'migrations'  => $this->service->listarMigrations(),
-            'historico'   => $this->safeHistorico(),
-            'resultado'   => null,
-            'erroConexao' => null,
-            'defaults'    => [
+            'titulo'            => 'Console SQL',
+            'conn'              => $conn,
+            'migrations'        => $this->service->listarMigrations(),
+            'historico'         => $this->safeHistorico(),
+            'esquema'           => $this->safeEsquema($conn),
+            'consultasSalvas'   => $this->safeConsultasSalvas(),
+            'resultado'         => null,
+            'resultadoConsulta' => null,
+            'erroConexao'       => null,
+            'erroConsulta'      => null,
+            'abaAtiva'          => 'livre',
+            'defaults'          => [
                 'host' => DB_HOST, 'porta' => (int) DB_PORT, 'banco' => DB_NAME, 'usuario' => DB_USER,
             ],
+            'scripts'           => ['/assets/js/sql-console.js'],
         ], $overrides);
 
         Response::view('admin/sql', $dados);
@@ -204,6 +272,30 @@ class SqlConsoleController
             return $this->logModel->historico(Auth::id());
         } catch (Throwable) {
             return [];
+        }
+    }
+
+    private function safeConsultasSalvas(): array
+    {
+        try {
+            return $this->consultaModel->listar(Auth::id());
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /** Introspecta tabelas/colunas/FKs do banco conectado para o construtor de consulta. */
+    private function safeEsquema(?array $conn): array
+    {
+        if ($conn === null) {
+            return ['tabelas' => [], 'fks' => []];
+        }
+
+        try {
+            $pdo = $this->service->conectar($conn['host'], (int) $conn['porta'], $conn['banco'], $conn['usuario'], $conn['senha']);
+            return $this->service->obterEsquema($pdo, $conn['banco']);
+        } catch (Throwable) {
+            return ['tabelas' => [], 'fks' => []];
         }
     }
 }

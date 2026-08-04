@@ -108,3 +108,6 @@ $router->add('POST', '/admin/sql/conectar',     'SqlConsoleController@conectar')
 $router->add('POST', '/admin/sql/desconectar',  'SqlConsoleController@desconectar');
 $router->add('POST', '/admin/sql/executar',     'SqlConsoleController@executar');
 $router->add('POST', '/admin/sql/migration',    'SqlConsoleController@executarMigration');
+$router->add('POST', '/admin/sql/consulta',         'SqlConsoleController@executarConsulta');
+$router->add('POST', '/admin/sql/consulta/salvar',  'SqlConsoleController@salvarConsulta');
+$router->add('POST', '/admin/sql/consulta/excluir', 'SqlConsoleController@excluirConsulta');

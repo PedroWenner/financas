@@ -125,7 +125,7 @@ class SqlConsoleService
             ];
 
             try {
-                if (preg_match('/^\s*(SELECT|SHOW|DESCRIBE|DESC|EXPLAIN)\b/i', $stmt)) {
+                if ($this->somenteLeitura($stmt)) {
                     $item['tipo'] = 'select';
                     $pdoStmt      = $pdo->query($stmt);
                     $linhas       = $pdoStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -147,6 +147,53 @@ class SqlConsoleService
         }
 
         return $resultado;
+    }
+
+    /** Indica se um statement é apenas leitura (permitido no construtor de consulta). */
+    public function somenteLeitura(string $statement): bool
+    {
+        return (bool) preg_match('/^\s*(SELECT|SHOW|DESCRIBE|DESC|EXPLAIN)\b/i', $statement);
+    }
+
+    /**
+     * Lê tabelas, colunas e chaves estrangeiras do banco conectado via
+     * information_schema, para montar a árvore do construtor de consulta.
+     *
+     * @return array{tabelas:array<string,array>,fks:array}
+     */
+    public function obterEsquema(PDO $pdo, string $banco): array
+    {
+        $stmtCols = $pdo->prepare("
+            SELECT TABLE_NAME AS tabela, COLUMN_NAME AS coluna,
+                   COLUMN_TYPE AS tipo, COLUMN_KEY AS chave
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = :banco
+            ORDER BY TABLE_NAME, ORDINAL_POSITION
+        ");
+        $stmtCols->execute([':banco' => $banco]);
+
+        $tabelas = [];
+        foreach ($stmtCols->fetchAll() as $col) {
+            $tabelas[$col['tabela']][] = [
+                'nome' => $col['coluna'],
+                'tipo' => $col['tipo'],
+                'pk'   => $col['chave'] === 'PRI',
+            ];
+        }
+
+        $stmtFks = $pdo->prepare("
+            SELECT TABLE_NAME AS tabela, COLUMN_NAME AS coluna,
+                   REFERENCED_TABLE_NAME AS ref_tabela, REFERENCED_COLUMN_NAME AS ref_coluna
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = :banco AND REFERENCED_TABLE_NAME IS NOT NULL
+            ORDER BY TABLE_NAME, COLUMN_NAME
+        ");
+        $stmtFks->execute([':banco' => $banco]);
+
+        return [
+            'tabelas' => $tabelas,
+            'fks'     => $stmtFks->fetchAll(),
+        ];
     }
 
     /** Nomes dos arquivos em migrations/, ordenados. */
