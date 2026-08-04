@@ -30,7 +30,7 @@ $anosDisponiveis = range(date('Y') - 5, date('Y') + 1);
                 <!-- Anual -->
                 <div id="filtro-anual" class="d-flex align-center gap-1" style="<?= $modo !== 'anual' ? 'display:none!important' : '' ?>">
                     <label class="fs-sm fw-600 text-muted">Ano:</label>
-                    <select name="ano" class="form-select" style="width:auto;">
+                    <select name="ano" class="form-control" style="width:auto;">
                         <?php foreach ($anosDisponiveis as $a): ?>
                             <option value="<?= $a ?>" <?= $a == $anoIni ? 'selected' : '' ?>><?= $a ?></option>
                         <?php endforeach; ?>
@@ -40,12 +40,12 @@ $anosDisponiveis = range(date('Y') - 5, date('Y') + 1);
                 <!-- Mensal -->
                 <div id="filtro-mensal" class="d-flex align-center gap-1" style="<?= $modo !== 'mensal' ? 'display:none!important' : '' ?>">
                     <label class="fs-sm fw-600 text-muted">Mês:</label>
-                    <select name="mes" class="form-select" style="width:auto;">
+                    <select name="mes" class="form-control" style="width:auto;">
                         <?php foreach ($mesesNomes as $n => $nome): ?>
                             <option value="<?= $n ?>" <?= $n == $mesIni ? 'selected' : '' ?>><?= $nome ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <select name="ano" class="form-select" style="width:auto;">
+                    <select name="ano" class="form-control" style="width:auto;">
                         <?php foreach ($anosDisponiveis as $a): ?>
                             <option value="<?= $a ?>" <?= $a == $anoIni ? 'selected' : '' ?>><?= $a ?></option>
                         <?php endforeach; ?>
@@ -55,23 +55,23 @@ $anosDisponiveis = range(date('Y') - 5, date('Y') + 1);
                 <!-- Período -->
                 <div id="filtro-periodo" class="d-flex align-center gap-1 flex-wrap" style="<?= $modo !== 'periodo' ? 'display:none!important' : '' ?>">
                     <label class="fs-sm fw-600 text-muted">De:</label>
-                    <select name="mes_inicio" class="form-select" style="width:auto;">
+                    <select name="mes_inicio" class="form-control" style="width:auto;">
                         <?php foreach ($mesesNomes as $n => $nome): ?>
                             <option value="<?= $n ?>" <?= $n == $mesIni ? 'selected' : '' ?>><?= $nome ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <select name="ano_inicio" class="form-select" style="width:auto;">
+                    <select name="ano_inicio" class="form-control" style="width:auto;">
                         <?php foreach ($anosDisponiveis as $a): ?>
                             <option value="<?= $a ?>" <?= $a == $anoIni ? 'selected' : '' ?>><?= $a ?></option>
                         <?php endforeach; ?>
                     </select>
                     <span class="fs-sm text-muted">até</span>
-                    <select name="mes_fim" class="form-select" style="width:auto;">
+                    <select name="mes_fim" class="form-control" style="width:auto;">
                         <?php foreach ($mesesNomes as $n => $nome): ?>
                             <option value="<?= $n ?>" <?= $n == $mesFim ? 'selected' : '' ?>><?= $nome ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <select name="ano_fim" class="form-select" style="width:auto;">
+                    <select name="ano_fim" class="form-control" style="width:auto;">
                         <?php foreach ($anosDisponiveis as $a): ?>
                             <option value="<?= $a ?>" <?= $a == $anoFim ? 'selected' : '' ?>><?= $a ?></option>
                         <?php endforeach; ?>

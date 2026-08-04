@@ -342,21 +342,45 @@ class DespesaModel extends BaseModel
 
     /**
      * Marca despesa como paga/não paga.
+     * Se a despesa estiver vinculada a uma parcela (tipo='parcelada'),
+     * sincroniza o status também na tabela `parcelas`.
      */
     public function marcarPago(int $id, int $usuarioId, bool $pago): bool
     {
-        $stmt = $this->db->prepare("
-            UPDATE despesas
-            SET pago = :pago, data_pagamento = :data_pag
-            WHERE id = :id AND usuario_id = :uid
-        ");
-        $stmt->execute([
-            ':pago'     => (int) $pago,
-            ':data_pag' => $pago ? date('Y-m-d') : null,
-            ':id'       => $id,
-            ':uid'      => $usuarioId,
-        ]);
-        return $stmt->rowCount() > 0;
+        $this->beginTransaction();
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE despesas
+                SET pago = :pago, data_pagamento = :data_pag
+                WHERE id = :id AND usuario_id = :uid
+            ");
+            $stmt->execute([
+                ':pago'     => (int) $pago,
+                ':data_pag' => $pago ? date('Y-m-d') : null,
+                ':id'       => $id,
+                ':uid'      => $usuarioId,
+            ]);
+            $ok = $stmt->rowCount() > 0;
+
+            $this->db->prepare("
+                UPDATE parcelas p
+                JOIN despesas d ON d.parcela_id = p.id
+                SET p.pago = :pago, p.data_pagamento = :data_pag
+                WHERE d.id = :id AND d.usuario_id = :uid AND d.parcela_id IS NOT NULL
+            ")->execute([
+                ':pago'     => (int) $pago,
+                ':data_pag' => $pago ? date('Y-m-d') : null,
+                ':id'       => $id,
+                ':uid'      => $usuarioId,
+            ]);
+
+            $this->commit();
+            return $ok;
+
+        } catch (\Exception $e) {
+            $this->rollBack();
+            throw $e;
+        }
     }
 
     /**

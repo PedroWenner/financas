@@ -114,3 +114,10 @@ function corProgresso(float $percentual): string
     if ($percentual >= 70) return 'warning';
     return 'success';
 }
+
+/** Só usuários cujo e-mail está em SQL_CONSOLE_ADMINS podem acessar o console SQL (/admin/sql). */
+function podeAcessarSqlConsole(): bool
+{
+    if (!Auth::check()) return false;
+    return in_array(mb_strtolower(Auth::email()), array_map('mb_strtolower', SQL_CONSOLE_ADMINS), true);
+}

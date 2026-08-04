@@ -99,3 +99,12 @@ $router->add('GET', '/relatorios', 'RelatorioController@index');
 $router->add('GET',  '/perfil',          'PerfilController@index');
 $router->add('POST', '/perfil/atualizar','PerfilController@atualizar');
 $router->add('POST', '/perfil/senha',    'PerfilController@atualizarSenha');
+
+// ──────────────────────────────────────────────
+// Admin (acesso restrito — ver SQL_CONSOLE_ADMINS)
+// ──────────────────────────────────────────────
+$router->add('GET',  '/admin/sql',              'SqlConsoleController@index');
+$router->add('POST', '/admin/sql/conectar',     'SqlConsoleController@conectar');
+$router->add('POST', '/admin/sql/desconectar',  'SqlConsoleController@desconectar');
+$router->add('POST', '/admin/sql/executar',     'SqlConsoleController@executar');
+$router->add('POST', '/admin/sql/migration',    'SqlConsoleController@executarMigration');

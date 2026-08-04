@@ -31,6 +31,13 @@ if (APP_ENV === 'development') {
 define('GROQ_API_KEY', getenv('GROQ_API_KEY') ?: '');
 
 // ──────────────────────────────────────────────
+// Console SQL (/admin/sql) — e-mails autorizados
+// ──────────────────────────────────────────────
+define('SQL_CONSOLE_ADMINS', array_values(array_filter(array_map(
+    'trim', explode(',', (string) getenv('SQL_CONSOLE_ADMINS'))
+))));
+
+// ──────────────────────────────────────────────
 // Timezone e locale
 // ──────────────────────────────────────────────
 date_default_timezone_set('America/Sao_Paulo');

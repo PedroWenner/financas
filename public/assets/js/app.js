@@ -249,15 +249,31 @@ function parseMoedaBR(str) {
 // ──────────────────────────────────────────────
 // Ordenação de Tabelas
 // ──────────────────────────────────────────────
+function _tableSortKey(tableIndex) {
+    return 'sortTabela:' + window.location.pathname + ':' + tableIndex;
+}
+
 function initTableSort() {
-    document.querySelectorAll('.table-wrapper table').forEach(table => {
+    document.querySelectorAll('.table-wrapper table').forEach((table, tableIndex) => {
         table.querySelectorAll('thead th').forEach((th, colIndex) => {
             const label = th.textContent.trim().toLowerCase();
             if (label === 'ações' || label === 'ação' || th.dataset.noSort !== undefined) return;
 
             th.classList.add('sortable');
-            th.addEventListener('click', () => _sortTable(table, th, colIndex));
+            th.addEventListener('click', () => _sortTable(table, th, colIndex, tableIndex));
         });
+
+        const salvo = sessionStorage.getItem(_tableSortKey(tableIndex));
+        if (salvo) {
+            const { colIndex, dir } = JSON.parse(salvo);
+            const th = table.querySelectorAll('thead th')[colIndex];
+            if (th) {
+                // Se a ordenação salva é decrescente, simula o estado "asc" prévio
+                // para que _sortTable alterne corretamente para "desc".
+                if (dir === 'desc') th.classList.add('sort-asc');
+                _sortTable(table, th, colIndex, tableIndex, true);
+            }
+        }
     });
 }
 
@@ -284,7 +300,7 @@ function _parseCellValue(td) {
     return { type: 'text', value: text.toLowerCase() };
 }
 
-function _sortTable(table, clickedTh, colIndex) {
+function _sortTable(table, clickedTh, colIndex, tableIndex, isRestoring) {
     const tbody   = table.querySelector('tbody');
     if (!tbody) return;
     const rows    = Array.from(tbody.querySelectorAll('tr'));
@@ -292,6 +308,11 @@ function _sortTable(table, clickedTh, colIndex) {
 
     table.querySelectorAll('thead th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
     clickedTh.classList.add(isAsc ? 'sort-desc' : 'sort-asc');
+
+    if (!isRestoring && tableIndex !== undefined) {
+        const dir = isAsc ? 'desc' : 'asc';
+        sessionStorage.setItem(_tableSortKey(tableIndex), JSON.stringify({ colIndex, dir }));
+    }
 
     rows.sort((a, b) => {
         const cellA = a.querySelectorAll('td')[colIndex];
