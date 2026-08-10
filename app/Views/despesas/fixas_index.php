@@ -65,14 +65,10 @@
                                 <a href="/despesas-fixas/editar?id=<?= $f['id'] ?>" class="btn btn-secondary btn-sm" title="Editar">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
-                                <form method="POST" action="/despesas-fixas/excluir" style="display:inline;">
-                                    <?= CsrfHelper::field() ?>
-                                    <input type="hidden" name="id" value="<?= $f['id'] ?>">
-                                    <button type="submit" class="btn btn-warning btn-sm" title="Desativar"
-                                            data-confirm="Desativar '<?= addslashes(e($f['descricao'])) ?>'? Os lançamentos existentes não serão removidos.">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-warning btn-sm" title="Finalizar"
+                                        onclick="abrirFinalizar(<?= $f['id'] ?>, '<?= addslashes(e($f['descricao'])) ?>', '<?= e($f['data_inicio']) ?>')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                                </button>
                             <?php else: ?>
                                 <form method="POST" action="/despesas-fixas/ativar" style="display:inline;">
                                     <?= CsrfHelper::field() ?>
@@ -98,3 +94,39 @@
         </table>
     </div>
 <?php endif; ?>
+
+<!-- Modal: Finalizar Despesa Fixa -->
+<div class="modal-overlay" id="modal-finalizar">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Finalizar Despesa Fixa</span>
+            <button class="modal-close" type="button">×</button>
+        </div>
+        <form method="POST" action="/despesas-fixas/finalizar">
+            <?= CsrfHelper::field() ?>
+            <input type="hidden" name="id" id="finalizar-id">
+            <div class="modal-body">
+                <p>Finalizar <strong id="finalizar-descricao"></strong>? Os lançamentos já gerados para meses fora do novo período de vigência serão excluídos.</p>
+                <div class="form-group">
+                    <label for="finalizar-data">Data de finalização *</label>
+                    <input type="date" id="finalizar-data" name="data_fim" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+                <button type="submit" class="btn btn-warning">Finalizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirFinalizar(id, descricao, dataInicio) {
+    document.getElementById('finalizar-id').value = id;
+    document.getElementById('finalizar-descricao').textContent = descricao;
+    const campoData = document.getElementById('finalizar-data');
+    campoData.min = dataInicio;
+    campoData.value = new Date().toISOString().slice(0, 10);
+    openModal('modal-finalizar');
+}
+</script>

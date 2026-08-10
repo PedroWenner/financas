@@ -47,7 +47,7 @@ $router->add('GET',  '/despesas-fixas/criar',   'DespesaFixaController@criar');
 $router->add('POST', '/despesas-fixas/criar',   'DespesaFixaController@store');
 $router->add('GET',  '/despesas-fixas/editar',  'DespesaFixaController@editar');
 $router->add('POST', '/despesas-fixas/editar',  'DespesaFixaController@update');
-$router->add('POST', '/despesas-fixas/excluir', 'DespesaFixaController@destroy');
+$router->add('POST', '/despesas-fixas/finalizar', 'DespesaFixaController@finalizar');
 $router->add('POST', '/despesas-fixas/deletar', 'DespesaFixaController@deletar');
 $router->add('POST', '/despesas-fixas/ativar',  'DespesaFixaController@ativar');
 

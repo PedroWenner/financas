@@ -97,15 +97,39 @@ class DespesaFixaModel extends BaseModel
     }
 
     /**
-     * Desativa template (não gera mais lançamentos futuros).
+     * Encerra a vigência do template numa data específica, desativa-o e remove
+     * os lançamentos já gerados fora do novo intervalo [data_inicio, data_fim].
      */
-    public function desativar(int $id, int $usuarioId): bool
+    public function finalizar(int $id, int $usuarioId, string $dataFim): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE despesas_fixas SET ativo = 0 WHERE id = :id AND usuario_id = :uid"
+            "SELECT id FROM despesas_fixas WHERE id = :id AND usuario_id = :uid"
         );
         $stmt->execute([':id' => $id, ':uid' => $usuarioId]);
-        return $stmt->rowCount() > 0;
+        if (!$stmt->fetch()) return false;
+
+        $this->db->beginTransaction();
+        try {
+            $this->db->prepare("
+                UPDATE despesas_fixas
+                SET data_fim = :fim, ativo = 0
+                WHERE id = :id AND usuario_id = :uid
+            ")->execute([':fim' => $dataFim, ':id' => $id, ':uid' => $usuarioId]);
+
+            $this->db->prepare("
+                DELETE d FROM despesas d
+                INNER JOIN despesas_fixas df ON df.id = d.despesa_fixa_id
+                WHERE df.id = :id
+                  AND d.usuario_id = :uid
+                  AND (d.data < df.data_inicio OR d.data > df.data_fim)
+            ")->execute([':id' => $id, ':uid' => $usuarioId]);
+
+            $this->db->commit();
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     /**

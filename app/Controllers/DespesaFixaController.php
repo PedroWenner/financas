@@ -106,15 +106,28 @@ class DespesaFixaController
         Response::redirectWith('/despesas-fixas', $ok ? 'success' : 'info', $ok ? 'Atualizada com sucesso!' : 'Nenhuma alteração.');
     }
 
-    /** POST /despesas-fixas/excluir */
-    public function destroy(): void
+    /** POST /despesas-fixas/finalizar */
+    public function finalizar(): void
     {
         CsrfHelper::check();
-        $uid = Auth::id();
-        $id  = (int) Request::post('id', 0);
+        $uid     = Auth::id();
+        $id      = (int) Request::post('id', 0);
+        $dataFim = Request::post('data_fim', '');
 
-        $this->model->desativar($id, $uid);
-        Response::redirectWith('/despesas-fixas', 'success', 'Despesa fixa desativada.');
+        $v = new ValidationHelper(['data_fim' => $dataFim]);
+        $v->required('data_fim', 'Data de finalização')->date('data_fim', 'Data de finalização');
+
+        if (!$v->passes()) {
+            Response::redirectWith('/despesas-fixas', 'error', $v->error('data_fim'));
+            return;
+        }
+
+        $ok = $this->model->finalizar($id, $uid, $dataFim);
+        Response::redirectWith(
+            '/despesas-fixas',
+            $ok ? 'success' : 'error',
+            $ok ? 'Despesa fixa finalizada. Lançamentos fora do período foram removidos.' : 'Despesa fixa não encontrada.'
+        );
     }
 
     /** POST /despesas-fixas/deletar — exclusão permanente com todos os lançamentos */
