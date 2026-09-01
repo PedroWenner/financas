@@ -78,8 +78,6 @@ class DashboardController
                AND YEAR(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     ELSE d.data
@@ -87,8 +85,6 @@ class DashboardController
                AND MONTH(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     ELSE d.data
@@ -109,8 +105,6 @@ class DashboardController
                AND YEAR(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     ELSE d.data
@@ -118,8 +112,6 @@ class DashboardController
                AND MONTH(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     ELSE d.data
@@ -183,8 +175,6 @@ class DashboardController
                AND YEAR(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     ELSE d.data
@@ -192,8 +182,6 @@ class DashboardController
                AND MONTH(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                         THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                     ELSE d.data
@@ -256,8 +244,6 @@ class DashboardController
                    AND YEAR(CASE
                         WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                             THEN d.data_pagamento
-                        WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                         WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                         ELSE d.data
@@ -265,8 +251,6 @@ class DashboardController
                    AND MONTH(CASE
                         WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                             THEN d.data_pagamento
-                        WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                            THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                         WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
                             THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
                         ELSE d.data
