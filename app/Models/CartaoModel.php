@@ -186,11 +186,15 @@ class CartaoModel extends BaseModel
         $diaFechamento = (int) $c['dia_fechamento'];
         $diaVencimento = (int) $c['dia_vencimento'];
 
-        // Se comprou antes do fechamento → fatura do mês atual → vence neste mês
-        // Se comprou no/após fechamento → fatura do próximo mês → vence no mês seguinte
-        $refMes = $diaCompra < $diaFechamento
-            ? $compra
-            : $compra->modify('first day of next month');
+        // Etapa 1: em qual ciclo a compra entra (se comprou no/após o fechamento, cai no ciclo seguinte)
+        $refMes = $diaCompra >= $diaFechamento
+            ? $compra->modify('first day of next month')
+            : $compra;
+
+        // Etapa 2: em que mês esse ciclo vence (se o fechamento é no/após o dia de vencimento, vence no mês seguinte ao fechamento)
+        if ($diaFechamento >= $diaVencimento) {
+            $refMes = $refMes->modify('first day of next month');
+        }
 
         // Limita ao último dia do mês de vencimento
         $ultimoDia = (int) $refMes->format('t');

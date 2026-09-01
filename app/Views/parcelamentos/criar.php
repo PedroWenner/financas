@@ -182,8 +182,14 @@ function calcularPrimeiraParcela(dataCompra, cartaoSelect) {
         return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-01`;
     }
 
-    // Com cartão: se diaCompra < diaFechamento → mesmo mês; senão → mês seguinte
-    const refMes = diaCompra < diaFechamento ? new Date(y, m - 1, 1) : new Date(y, m, 1);
+    // Etapa 1: em qual ciclo a compra entra (se diaCompra < diaFechamento → mesmo mês; senão → mês seguinte)
+    let refMes = diaCompra < diaFechamento ? new Date(y, m - 1, 1) : new Date(y, m, 1);
+
+    // Etapa 2: em que mês esse ciclo vence (se fechamento >= vencimento → vence no mês seguinte ao fechamento)
+    if (diaFechamento >= diaVencimento) {
+        refMes = new Date(refMes.getFullYear(), refMes.getMonth() + 1, 1);
+    }
+
     const diasRefMes = new Date(refMes.getFullYear(), refMes.getMonth() + 1, 0).getDate();
     const dia = Math.min(diaVencimento, diasRefMes);
     return `${refMes.getFullYear()}-${String(refMes.getMonth()+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
