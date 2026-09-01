@@ -45,20 +45,19 @@ class DespesaController
             $cartaoFiltro ?: null,
             null, $pagoFiltro, $pag
         );
-        // Cards de resumo: sempre mês completo (sem filtro de tipo/situação)
-        $total         = $this->model->totalMes($uid, $ano, $mes, $catFiltro ?: null, null, $cartaoFiltro ?: null);
-        $porTipo       = $this->model->totalPorTipo($uid, $ano, $mes, $catFiltro ?: null, $cartaoFiltro ?: null);
-        // Rodapé da tabela: respeita todos os filtros ativos
+        // Cards de resumo e rodapé da tabela: todos respeitam os filtros ativos
         $totalFiltrado = $this->model->totalMes($uid, $ano, $mes, $catFiltro ?: null, $tipoFiltro ?: null, $cartaoFiltro ?: null, $pagoFiltro);
+        $porTipo       = $this->model->totalPorTipo($uid, $ano, $mes, $catFiltro ?: null, $cartaoFiltro ?: null, $tipoFiltro ?: null, $pagoFiltro);
         $count         = $this->model->contar($uid, $ano, $mes, $tipoFiltro ?: null, $catFiltro ?: null, $cartaoFiltro ?: null, $pagoFiltro);
+        $filtrado      = $tipoFiltro !== '' || $situacao !== '';
 
         Response::view('despesas/index', [
             'titulo'         => 'Despesas',
             'despesas'       => $despesas,
-            'total'          => $total,
             'totalFiltrado'  => $totalFiltrado,
             'porTipo'        => $porTipo,
             'count'          => $count,
+            'filtrado'       => $filtrado,
             'categorias'     => $this->categorias->listar($uid, 'despesa'),
             'cartoes'        => $this->cartoes->listar($uid),
             'ano'            => $ano,

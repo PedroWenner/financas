@@ -35,8 +35,8 @@ $refUrl = urlencode('/despesas?' . $qsFiltros);
 <!-- Cards de Resumo -->
 <div class="stats-grid mb-3">
     <div class="stat-card despesas">
-        <div class="stat-label">💸 Total do Mês</div>
-        <div class="stat-value negative"><?= moeda($total) ?></div>
+        <div class="stat-label">💸 <?= $filtrado ? 'Total Filtrado' : 'Total do Mês' ?></div>
+        <div class="stat-value negative"><?= moeda($totalFiltrado) ?></div>
         <div class="stat-meta"><?= $count ?> lançamento<?= $count !== 1 ? 's' : '' ?></div>
     </div>
     <div class="stat-card" style="border-left-color:#d97706;">
@@ -206,7 +206,7 @@ $refUrl = urlencode('/despesas?' . $qsFiltros);
             <tfoot>
                 <tr>
                     <td colspan="6" class="fw-600 text-right" style="padding:12px 16px;">
-                        <?= ($tipoFiltro || $situacao !== '') ? 'Total filtrado:' : 'Total:' ?>
+                        <?= $filtrado ? 'Total filtrado:' : 'Total:' ?>
                     </td>
                     <td class="fw-700 text-danger text-right" style="padding:12px 16px;"><?= moeda($totalFiltrado) ?></td>
                     <td></td>

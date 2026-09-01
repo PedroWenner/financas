@@ -222,14 +222,16 @@ class DespesaModel extends BaseModel
     }
 
     /**
-     * Total de despesas do mês por tipo (respeita filtros de categoria e cartão).
+     * Total de despesas do mês por tipo (respeita todos os filtros ativos).
      */
     public function totalPorTipo(
         int $usuarioId,
         int $ano,
         int $mes,
         ?int $categoriaId  = null,
-        ?int $cartaoId     = null
+        ?int $cartaoId     = null,
+        ?string $tipo      = null,
+        ?int $pago         = null
     ): array {
         $where  = "d.usuario_id = :uid
             AND YEAR(CASE
@@ -264,6 +266,14 @@ class DespesaModel extends BaseModel
         } elseif ($cartaoId) {
             $where .= " AND d.cartao_id = :cartao";
             $params[':cartao'] = $cartaoId;
+        }
+        if ($tipo) {
+            $where .= " AND d.tipo = :tipo";
+            $params[':tipo'] = $tipo;
+        }
+        if ($pago !== null) {
+            $where .= " AND d.pago = :pago";
+            $params[':pago'] = $pago;
         }
 
         $stmt = $this->db->prepare("
