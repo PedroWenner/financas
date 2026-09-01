@@ -28,15 +28,21 @@ class CartaoModel extends BaseModel
                 AND YEAR(CASE
                               WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                                   THEN d.data_pagamento
-                              WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
-                                  THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                              WHEN d.tipo != 'parcelada'
+                                  THEN DATE_ADD(d.data, INTERVAL (
+                                      CASE WHEN DAY(d.data) >= c.dia_fechamento THEN 1 ELSE 0 END +
+                                      CASE WHEN c.dia_fechamento >= c.dia_vencimento THEN 1 ELSE 0 END
+                                  ) MONTH)
                               ELSE d.data
                          END) = :ano
                 AND MONTH(CASE
                                WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                                    THEN d.data_pagamento
-                               WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
-                                   THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                               WHEN d.tipo != 'parcelada'
+                                   THEN DATE_ADD(d.data, INTERVAL (
+                                       CASE WHEN DAY(d.data) >= c.dia_fechamento THEN 1 ELSE 0 END +
+                                       CASE WHEN c.dia_fechamento >= c.dia_vencimento THEN 1 ELSE 0 END
+                                   ) MONTH)
                                ELSE d.data
                           END) = :mes
             WHERE c.usuario_id = :uid AND c.ativo = 1
@@ -141,15 +147,21 @@ class CartaoModel extends BaseModel
               AND YEAR(CASE
                             WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                                 THEN d.data_pagamento
-                            WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
-                                THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                            WHEN d.tipo != 'parcelada'
+                                THEN DATE_ADD(d.data, INTERVAL (
+                                    CASE WHEN DAY(d.data) >= c.dia_fechamento THEN 1 ELSE 0 END +
+                                    CASE WHEN c.dia_fechamento >= c.dia_vencimento THEN 1 ELSE 0 END
+                                ) MONTH)
                             ELSE d.data
                        END) = :ano
               AND MONTH(CASE
                              WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                                  THEN d.data_pagamento
-                             WHEN d.tipo != 'parcelada' AND DAY(d.data) >= c.dia_fechamento
-                                 THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                             WHEN d.tipo != 'parcelada'
+                                 THEN DATE_ADD(d.data, INTERVAL (
+                                     CASE WHEN DAY(d.data) >= c.dia_fechamento THEN 1 ELSE 0 END +
+                                     CASE WHEN c.dia_fechamento >= c.dia_vencimento THEN 1 ELSE 0 END
+                                 ) MONTH)
                              ELSE d.data
                         END) = :mes
             ORDER BY d.data DESC

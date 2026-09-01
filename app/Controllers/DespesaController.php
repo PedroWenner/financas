@@ -235,12 +235,18 @@ class DespesaController
             $cartao = $this->cartoes->buscarPorId((int) $dados['cartao_id'], $uid);
             if ($cartao) {
                 $diaFechamento = (int) $cartao['dia_fechamento'];
+                $diaVencimento = (int) $cartao['dia_vencimento'];
                 $diaCompra     = (int) date('j', strtotime($data));
+
+                $faturaDate = new DateTimeImmutable($data);
                 if ($diaCompra >= $diaFechamento) {
-                    $faturaDate = (new DateTimeImmutable($data))->modify('first day of next month');
-                    $mes = (int) $faturaDate->format('n');
-                    $ano = (int) $faturaDate->format('Y');
+                    $faturaDate = $faturaDate->modify('first day of next month');
                 }
+                if ($diaFechamento >= $diaVencimento) {
+                    $faturaDate = $faturaDate->modify('first day of next month');
+                }
+                $mes = (int) $faturaDate->format('n');
+                $ano = (int) $faturaDate->format('Y');
             }
         }
 

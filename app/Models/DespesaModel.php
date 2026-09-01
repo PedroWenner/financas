@@ -29,19 +29,21 @@ class DespesaModel extends BaseModel
             AND YEAR(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                        THEN DATE_ADD(d.data, INTERVAL (
+                            CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                            CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                        ) MONTH)
                     ELSE d.data
                 END) = :ano
             AND MONTH(CASE
                 WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                     THEN d.data_pagamento
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                    THEN DATE_ADD(d.data, INTERVAL (
+                        CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                        CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                    ) MONTH)
                 ELSE d.data
             END) = :mes"
             . $this->condicaoBloqueio();
@@ -105,19 +107,21 @@ class DespesaModel extends BaseModel
             AND YEAR(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                        THEN DATE_ADD(d.data, INTERVAL (
+                            CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                            CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                        ) MONTH)
                     ELSE d.data
                 END) = :ano
             AND MONTH(CASE
                 WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                     THEN d.data_pagamento
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                    THEN DATE_ADD(d.data, INTERVAL (
+                        CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                        CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                    ) MONTH)
                 ELSE d.data
             END) = :mes"
             . $this->condicaoBloqueio();
@@ -168,19 +172,21 @@ class DespesaModel extends BaseModel
             AND YEAR(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                        THEN DATE_ADD(d.data, INTERVAL (
+                            CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                            CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                        ) MONTH)
                     ELSE d.data
                 END) = :ano
             AND MONTH(CASE
                 WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                     THEN d.data_pagamento
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                    THEN DATE_ADD(d.data, INTERVAL (
+                        CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                        CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                    ) MONTH)
                 ELSE d.data
             END) = :mes"
             . $this->condicaoBloqueio();
@@ -229,19 +235,21 @@ class DespesaModel extends BaseModel
             AND YEAR(CASE
                     WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                         THEN d.data_pagamento
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                        THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                    WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                        THEN DATE_ADD(d.data, INTERVAL (
+                            CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                            CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                        ) MONTH)
                     ELSE d.data
                 END) = :ano
             AND MONTH(CASE
                 WHEN d.tipo = 'parcelada' AND d.pago = 1 AND d.data_pagamento IS NOT NULL
                     THEN d.data_pagamento
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                    THEN DATE_ADD(d.data, INTERVAL (
+                        CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                        CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                    ) MONTH)
                 ELSE d.data
             END) = :mes"
             . $this->condicaoBloqueio();
@@ -424,17 +432,19 @@ class DespesaModel extends BaseModel
             LEFT JOIN cartoes    c   ON c.id   = d.cartao_id
             WHERE d.usuario_id = :uid
               AND YEAR(CASE
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                    THEN DATE_ADD(d.data, INTERVAL (
+                        CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                        CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                    ) MONTH)
                 ELSE d.data
               END) = :ano
               AND MONTH(CASE
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
-                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL AND DAY(d.data) >= IFNULL(c.dia_fechamento, 32)
-                    THEN DATE_ADD(d.data, INTERVAL 1 MONTH)
+                WHEN d.tipo != 'parcelada' AND d.cartao_id IS NOT NULL
+                    THEN DATE_ADD(d.data, INTERVAL (
+                        CASE WHEN DAY(d.data) >= IFNULL(c.dia_fechamento, 32) THEN 1 ELSE 0 END +
+                        CASE WHEN IFNULL(c.dia_fechamento, 32) >= IFNULL(c.dia_vencimento, 32) THEN 1 ELSE 0 END
+                    ) MONTH)
                 ELSE d.data
               END) = :mes
               " . $this->condicaoBloqueio() . "
