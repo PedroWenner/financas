@@ -1,3 +1,5 @@
+<?php $filtroAtivo = $statusFiltro !== '' || $descricaoFiltro !== '' || $formaFiltro !== ''; ?>
+
 <div class="d-flex justify-between align-center mb-3">
     <div>
         <div class="stat-label">Custo fixo mensal estimado</div>
@@ -6,13 +8,54 @@
     <a href="/despesas-fixas/criar" class="btn btn-primary">+ Nova Despesa Fixa</a>
 </div>
 
+<form method="GET" action="/despesas-fixas" class="card mb-3" style="padding:16px;">
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr auto;align-items:flex-end;gap:12px;">
+        <div class="form-group mb-0">
+            <label>Descrição</label>
+            <input type="text" name="descricao" class="form-control" placeholder="Buscar por descrição..." value="<?= e($descricaoFiltro) ?>">
+        </div>
+        <div class="form-group mb-0">
+            <label>Forma de Pagamento</label>
+            <select name="forma_pagamento" class="form-control">
+                <option value="">Todas</option>
+                <?php
+                $formasFiltro = ['dinheiro'=>'Dinheiro','debito'=>'Débito','credito'=>'Crédito','pix'=>'PIX','ted'=>'TED','boleto'=>'Boleto','outro'=>'Outro'];
+                foreach ($formasFiltro as $val => $label):
+                ?>
+                    <option value="<?= $val ?>" <?= $formaFiltro === $val ? 'selected' : '' ?>><?= $label ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="form-group mb-0">
+            <label>Status</label>
+            <select name="status" class="form-control">
+                <option value="">Todas</option>
+                <option value="1" <?= $statusFiltro === '1' ? 'selected' : '' ?>>Ativas</option>
+                <option value="0" <?= $statusFiltro === '0' ? 'selected' : '' ?>>Inativas</option>
+            </select>
+        </div>
+        <div class="form-group mb-0 d-flex gap-2">
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+            <?php if ($filtroAtivo): ?>
+                <a href="/despesas-fixas" class="btn btn-outline" title="Limpar filtros">Limpar</a>
+            <?php endif; ?>
+        </div>
+    </div>
+</form>
+
 <?php if (empty($fixas)): ?>
     <div class="card">
         <div class="card-body empty-state">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-            <h3>Nenhuma despesa fixa cadastrada</h3>
-            <p>Cadastre contas recorrentes como aluguel, internet, energia e assinaturas.</p>
-            <div class="mt-2"><a href="/despesas-fixas/criar" class="btn btn-primary">+ Nova Despesa Fixa</a></div>
+            <?php if ($filtroAtivo): ?>
+                <h3>Nenhuma despesa fixa encontrada</h3>
+                <p>Nenhum resultado para os filtros selecionados.</p>
+                <div class="mt-2"><a href="/despesas-fixas" class="btn btn-secondary">Limpar filtros</a></div>
+            <?php else: ?>
+                <h3>Nenhuma despesa fixa cadastrada</h3>
+                <p>Cadastre contas recorrentes como aluguel, internet, energia e assinaturas.</p>
+                <div class="mt-2"><a href="/despesas-fixas/criar" class="btn btn-primary">+ Nova Despesa Fixa</a></div>
+            <?php endif; ?>
         </div>
     </div>
 <?php else: ?>

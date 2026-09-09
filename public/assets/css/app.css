@@ -1296,6 +1296,80 @@ input[type="radio"]:disabled {
 .mob-actions-menu form:last-child .btn { border-bottom: none; }
 .mob-actions-menu form .btn { border-radius: 0; }
 
+/* ── Seletor de dia do mês (dia_vencimento) ── */
+.dia-picker { position: relative; }
+.dia-picker-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    background: var(--surface);
+}
+.dia-picker-trigger svg { flex-shrink: 0; color: var(--text-muted); }
+.dia-picker-trigger::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    margin-left: auto;
+    border-right: 1.5px solid var(--text-light);
+    border-bottom: 1.5px solid var(--text-light);
+    transform: rotate(45deg);
+    transition: transform var(--transition);
+}
+.dia-picker.open .dia-picker-trigger::after { transform: rotate(225deg); }
+.dia-picker-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 500;
+    width: 280px;
+    max-width: 90vw;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 14px;
+}
+.dia-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+.dia-picker-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: .8rem;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+.dia-picker-day:hover { background: var(--primary-light); color: var(--primary-dark); }
+.dia-picker-day.selected { background: var(--primary); color: #fff; font-weight: 600; }
+.dia-picker-ultimo {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: .82rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.dia-picker-ultimo:hover { border-color: var(--primary); color: var(--primary); }
+.dia-picker-ultimo.selected { background: var(--primary); border-color: var(--primary); color: #fff; }
+
 /* ── Relatórios mobile ── */
 @media (max-width: 1024px) {
 

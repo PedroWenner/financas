@@ -10,12 +10,32 @@ class DespesaFixaModel extends BaseModel
     protected string $table = 'despesas_fixas';
 
     /**
-     * Lista todos os templates ativos do usuário.
+     * Lista os templates do usuário, com filtros opcionais de status,
+     * descrição (busca parcial) e forma de pagamento.
+     *
+     * @param int|null $ativo null = todas, 1 = apenas ativas, 0 = apenas inativas
      */
-    public function listar(int $usuarioId, bool $apenasAtivos = true): array
-    {
-        $where = "df.usuario_id = :uid";
-        if ($apenasAtivos) $where .= " AND df.ativo = 1";
+    public function listar(
+        int $usuarioId,
+        ?int $ativo = null,
+        ?string $descricao = null,
+        ?string $formaPagamento = null
+    ): array {
+        $where  = "df.usuario_id = :uid";
+        $params = [':uid' => $usuarioId];
+
+        if ($ativo !== null) {
+            $where .= " AND df.ativo = :ativo";
+            $params[':ativo'] = $ativo;
+        }
+        if ($descricao) {
+            $where .= " AND df.descricao LIKE :desc";
+            $params[':desc'] = '%' . $descricao . '%';
+        }
+        if ($formaPagamento) {
+            $where .= " AND df.forma_pagamento = :forma";
+            $params[':forma'] = $formaPagamento;
+        }
 
         $stmt = $this->db->prepare("
             SELECT df.*, c.nome AS categoria_nome, c.cor AS categoria_cor,
@@ -28,7 +48,7 @@ class DespesaFixaModel extends BaseModel
             WHERE {$where}
             ORDER BY df.descricao ASC
         ");
-        $stmt->execute([':uid' => $usuarioId]);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

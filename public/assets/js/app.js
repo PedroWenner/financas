@@ -178,6 +178,11 @@ document.addEventListener('DOMContentLoaded', function () {
     initTableSort();
 
     // ──────────────────────────────────────────
+    // Seletor de dia do mês (dia_vencimento)
+    // ──────────────────────────────────────────
+    initDiaPickers();
+
+    // ──────────────────────────────────────────
     // Atualizar ícone do tema ao carregar
     // ──────────────────────────────────────────
     const temaIcon = document.getElementById('tema-icon');
@@ -388,3 +393,57 @@ function initMobileActions() {
 }
 
 document.addEventListener('DOMContentLoaded', initMobileActions);
+
+// ──────────────────────────────────────────────
+// Seletor de dia do mês (grade estilo calendário + "Último dia do mês")
+// ──────────────────────────────────────────────
+function initDiaPickers() {
+    document.querySelectorAll('.dia-picker').forEach(function (picker) {
+        const input   = picker.querySelector('input[type="hidden"]');
+        const trigger = picker.querySelector('.dia-picker-trigger');
+        const label   = picker.querySelector('.dia-picker-label');
+        const panel   = picker.querySelector('.dia-picker-panel');
+        if (!input || !trigger || !label || !panel) return;
+
+        function labelPara(valor) {
+            return valor === 'ultimo' ? 'Último dia do mês' : 'Dia ' + valor;
+        }
+
+        function aplicarSelecao(valor) {
+            label.textContent = labelPara(valor);
+            picker.querySelectorAll('[data-dia]').forEach(function (btn) {
+                btn.classList.toggle('selected', btn.dataset.dia === valor);
+            });
+        }
+
+        function selecionar(valor) {
+            input.value = valor;
+            aplicarSelecao(valor);
+            fechar();
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        function abrir() { picker.classList.add('open'); panel.hidden = false; }
+        function fechar() { picker.classList.remove('open'); panel.hidden = true; }
+
+        picker.querySelectorAll('[data-dia]').forEach(function (btn) {
+            btn.addEventListener('click', function () { selecionar(btn.dataset.dia); });
+        });
+
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            panel.hidden ? abrir() : fechar();
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!picker.contains(e.target)) fechar();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') fechar();
+        });
+
+        aplicarSelecao(input.value);
+    });
+}

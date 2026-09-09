@@ -23,8 +23,17 @@ class DespesaFixaController
     public function index(): void
     {
         $uid    = Auth::id();
-        $fixas  = $this->model->listar($uid, false); // inclui inativas para mostrar histórico
-        $total  = $this->model->totalMensalEstimado($uid);
+        $status = Request::getString('status');
+        $desc   = Request::getString('descricao');
+        $forma  = Request::getString('forma_pagamento');
+
+        $fixas = $this->model->listar(
+            $uid,
+            $status !== '' ? (int) $status : null,
+            $desc   !== '' ? $desc  : null,
+            $forma  !== '' ? $forma : null
+        );
+        $total = $this->model->totalMensalEstimado($uid);
 
         foreach ($fixas as &$f) {
             if ($f['ativo'] && $f['forma_pagamento'] === 'credito' && $f['cartao_id']) {
@@ -34,9 +43,12 @@ class DespesaFixaController
         unset($f);
 
         Response::view('despesas/fixas_index', [
-            'titulo' => 'Despesas Fixas',
-            'fixas'  => $fixas,
-            'total'  => $total,
+            'titulo'         => 'Despesas Fixas',
+            'fixas'          => $fixas,
+            'total'          => $total,
+            'statusFiltro'   => $status,
+            'descricaoFiltro'=> $desc,
+            'formaFiltro'    => $forma,
         ]);
     }
 

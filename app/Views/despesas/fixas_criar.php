@@ -37,13 +37,21 @@
                     <div class="form-group">
                         <label for="dia_vencimento">Dia de Vencimento *</label>
                         <?php $diaSelecionado = !empty($old['dia_vencimento_ultimo_dia']) ? 'ultimo' : (string) ($old['dia_vencimento'] ?? '10'); ?>
-                        <select id="dia_vencimento" name="dia_vencimento"
-                                class="form-control <?= !empty($errors['dia_vencimento']) ? 'is-invalid' : '' ?>" required>
-                            <?php for ($i = 1; $i <= 31; $i++): ?>
-                                <option value="<?= $i ?>" <?= $diaSelecionado === (string) $i ? 'selected' : '' ?>>Dia <?= $i ?></option>
-                            <?php endfor; ?>
-                            <option value="ultimo" <?= $diaSelecionado === 'ultimo' ? 'selected' : '' ?>>Último dia do mês</option>
-                        </select>
+                        <div class="dia-picker">
+                            <input type="hidden" id="dia_vencimento" name="dia_vencimento" value="<?= e($diaSelecionado) ?>">
+                            <button type="button" class="dia-picker-trigger form-control <?= !empty($errors['dia_vencimento']) ? 'is-invalid' : '' ?>">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <span class="dia-picker-label"><?= e($diaSelecionado === 'ultimo' ? 'Último dia do mês' : 'Dia ' . $diaSelecionado) ?></span>
+                            </button>
+                            <div class="dia-picker-panel" hidden>
+                                <div class="dia-picker-grid">
+                                    <?php for ($i = 1; $i <= 31; $i++): ?>
+                                        <button type="button" class="dia-picker-day" data-dia="<?= $i ?>"><?= $i ?></button>
+                                    <?php endfor; ?>
+                                </div>
+                                <button type="button" class="dia-picker-ultimo" data-dia="ultimo">Último dia do mês</button>
+                            </div>
+                        </div>
                         <?php if (!empty($errors['dia_vencimento'])): ?>
                             <div class="invalid-feedback"><?= e($errors['dia_vencimento']) ?></div>
                         <?php endif; ?>
