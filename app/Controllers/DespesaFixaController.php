@@ -9,12 +9,14 @@ class DespesaFixaController
 {
     private DespesaFixaModel $model;
     private CategoriaModel   $categorias;
+    private CartaoModel      $cartoes;
 
     public function __construct()
     {
         Auth::requireLogin();
         $this->model      = new DespesaFixaModel();
         $this->categorias = new CategoriaModel();
+        $this->cartoes    = new CartaoModel();
     }
 
     /** GET /despesas-fixas */
@@ -23,6 +25,13 @@ class DespesaFixaController
         $uid    = Auth::id();
         $fixas  = $this->model->listar($uid, false); // inclui inativas para mostrar histórico
         $total  = $this->model->totalMensalEstimado($uid);
+
+        foreach ($fixas as &$f) {
+            if ($f['ativo'] && $f['forma_pagamento'] === 'credito' && $f['cartao_id']) {
+                $f['proxima_data_debito'] = $this->calcularProximaDataDebito($f);
+            }
+        }
+        unset($f);
 
         Response::view('despesas/fixas_index', [
             'titulo' => 'Despesas Fixas',
@@ -38,7 +47,8 @@ class DespesaFixaController
         Response::view('despesas/fixas_criar', [
             'titulo'     => 'Nova Despesa Fixa',
             'categorias' => $this->categorias->listar($uid, 'despesa'),
-            'old'        => ['data_inicio' => date('Y-m-01'), 'dia_vencimento' => 10],
+            'cartoes'    => $this->cartoes->listar($uid),
+            'old'        => ['data_inicio' => date('Y-m-01'), 'dia_vencimento' => 10, 'forma_pagamento' => 'boleto'],
         ]);
     }
 
@@ -54,6 +64,7 @@ class DespesaFixaController
             Response::view('despesas/fixas_criar', [
                 'titulo'     => 'Nova Despesa Fixa',
                 'categorias' => $this->categorias->listar($uid, 'despesa'),
+                'cartoes'    => $this->cartoes->listar($uid),
                 'errors'     => $erros,
                 'old'        => $dados,
             ]);
@@ -79,6 +90,7 @@ class DespesaFixaController
             'titulo'     => 'Editar Despesa Fixa',
             'fixa'       => $fixa,
             'categorias' => $this->categorias->listar($uid, 'despesa'),
+            'cartoes'    => $this->cartoes->listar($uid),
         ]);
     }
 
@@ -96,6 +108,7 @@ class DespesaFixaController
                 'titulo'     => 'Editar Despesa Fixa',
                 'fixa'       => array_merge(['id' => $id], $dados),
                 'categorias' => $this->categorias->listar($uid, 'despesa'),
+                'cartoes'    => $this->cartoes->listar($uid),
                 'errors'     => $erros,
                 'old'        => $dados,
             ]);
@@ -156,16 +169,25 @@ class DespesaFixaController
     // Privados
     // ──────────────────────────────────────────────
 
+    /** Formas de pagamento aceitas para despesas fixas (mesmo enum de `despesas`). */
+    private const FORMAS_PAGAMENTO = ['dinheiro', 'debito', 'credito', 'pix', 'ted', 'boleto', 'outro'];
+
     private function extrairDados(): array
     {
+        $diaRaw    = Request::post('dia_vencimento', '10');
+        $ultimoDia = $diaRaw === 'ultimo';
+
         return [
-            'descricao'      => Request::post('descricao', ''),
-            'valor'          => ValidationHelper::parseMoeda(Request::post('valor', '0')),
-            'dia_vencimento' => (int) Request::post('dia_vencimento', 1),
-            'data_inicio'    => Request::post('data_inicio', ''),
-            'data_fim'       => Request::post('data_fim', ''),
-            'categoria_id'   => (int) Request::post('categoria_id', 0),
-            'observacoes'    => Request::post('observacoes', ''),
+            'descricao'                => Request::post('descricao', ''),
+            'valor'                    => ValidationHelper::parseMoeda(Request::post('valor', '0')),
+            'dia_vencimento'           => $ultimoDia ? 31 : (int) $diaRaw,
+            'dia_vencimento_ultimo_dia'=> $ultimoDia,
+            'forma_pagamento'          => Request::post('forma_pagamento', 'boleto'),
+            'cartao_id'                => (int) Request::post('cartao_id', 0),
+            'data_inicio'              => Request::post('data_inicio', ''),
+            'data_fim'                 => Request::post('data_fim', ''),
+            'categoria_id'             => (int) Request::post('categoria_id', 0),
+            'observacoes'              => Request::post('observacoes', ''),
         ];
     }
 
@@ -184,8 +206,16 @@ class DespesaFixaController
         }
 
         $dia = $dados['dia_vencimento'];
-        if ($dia < 1 || $dia > 28) {
-            $erros['dia_vencimento'] = 'O dia deve ser entre 1 e 28.';
+        if ($dia < 1 || $dia > 31) {
+            $erros['dia_vencimento'] = 'Selecione um dia de vencimento válido.';
+        }
+
+        if (!in_array($dados['forma_pagamento'], self::FORMAS_PAGAMENTO, true)) {
+            $erros['forma_pagamento'] = 'Forma de pagamento inválida.';
+        }
+
+        if ($dados['forma_pagamento'] === 'credito' && empty($dados['cartao_id'])) {
+            $erros['cartao_id'] = 'Selecione o cartão para pagamento no crédito.';
         }
 
         if (!empty($dados['data_fim']) && $dados['data_fim'] < $dados['data_inicio']) {
@@ -193,5 +223,16 @@ class DespesaFixaController
         }
 
         return $erros;
+    }
+
+    /** Calcula a próxima data em que o valor será debitado na fatura do cartão vinculado. */
+    private function calcularProximaDataDebito(array $fixa): string
+    {
+        $hoje      = new DateTimeImmutable('now');
+        $diasNoMes = (int) $hoje->format('t');
+        $dia       = $fixa['dia_vencimento_ultimo_dia'] ? $diasNoMes : min((int) $fixa['dia_vencimento'], $diasNoMes);
+        $dataRef   = $hoje->format('Y-m-') . str_pad((string) $dia, 2, '0', STR_PAD_LEFT);
+
+        return $this->cartoes->calcularDataPrimeiraParcela((int) $fixa['cartao_id'], $dataRef);
     }
 }

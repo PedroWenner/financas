@@ -18,9 +18,13 @@ class DespesaFixaModel extends BaseModel
         if ($apenasAtivos) $where .= " AND df.ativo = 1";
 
         $stmt = $this->db->prepare("
-            SELECT df.*, c.nome AS categoria_nome, c.cor AS categoria_cor
+            SELECT df.*, c.nome AS categoria_nome, c.cor AS categoria_cor,
+                   ct.nome AS cartao_nome, ct.cor AS cartao_cor,
+                   ct.dia_fechamento AS cartao_dia_fechamento,
+                   ct.dia_vencimento AS cartao_dia_vencimento
             FROM despesas_fixas df
             LEFT JOIN categorias c ON c.id = df.categoria_id
+            LEFT JOIN cartoes    ct ON ct.id = df.cartao_id
             WHERE {$where}
             ORDER BY df.descricao ASC
         ");
@@ -49,19 +53,23 @@ class DespesaFixaModel extends BaseModel
         $stmt = $this->db->prepare("
             INSERT INTO despesas_fixas
                 (usuario_id, categoria_id, descricao, valor,
-                 dia_vencimento, data_inicio, data_fim, observacoes)
+                 dia_vencimento, dia_vencimento_ultimo_dia, forma_pagamento, cartao_id,
+                 data_inicio, data_fim, observacoes)
             VALUES
-                (:uid, :cat, :desc, :valor, :dia, :inicio, :fim, :obs)
+                (:uid, :cat, :desc, :valor, :dia, :dia_ultimo, :forma, :cartao, :inicio, :fim, :obs)
         ");
         $stmt->execute([
-            ':uid'    => $usuarioId,
-            ':cat'    => $dados['categoria_id']  ?: null,
-            ':desc'   => trim($dados['descricao']),
-            ':valor'  => $dados['valor'],
-            ':dia'    => (int) $dados['dia_vencimento'],
-            ':inicio' => $dados['data_inicio'],
-            ':fim'    => $dados['data_fim']      ?: null,
-            ':obs'    => $dados['observacoes']   ?: null,
+            ':uid'        => $usuarioId,
+            ':cat'        => $dados['categoria_id']  ?: null,
+            ':desc'       => trim($dados['descricao']),
+            ':valor'      => $dados['valor'],
+            ':dia'        => (int) $dados['dia_vencimento'],
+            ':dia_ultimo' => (int) $dados['dia_vencimento_ultimo_dia'],
+            ':forma'      => $dados['forma_pagamento'],
+            ':cartao'     => $dados['forma_pagamento'] === 'credito' ? ($dados['cartao_id'] ?: null) : null,
+            ':inicio'     => $dados['data_inicio'],
+            ':fim'        => $dados['data_fim']      ?: null,
+            ':obs'        => $dados['observacoes']   ?: null,
         ]);
         return $this->lastId();
     }
@@ -73,25 +81,31 @@ class DespesaFixaModel extends BaseModel
     {
         $stmt = $this->db->prepare("
             UPDATE despesas_fixas
-            SET categoria_id   = :cat,
-                descricao      = :desc,
-                valor          = :valor,
-                dia_vencimento = :dia,
-                data_inicio    = :inicio,
-                data_fim       = :fim,
-                observacoes    = :obs
+            SET categoria_id              = :cat,
+                descricao                 = :desc,
+                valor                     = :valor,
+                dia_vencimento            = :dia,
+                dia_vencimento_ultimo_dia = :dia_ultimo,
+                forma_pagamento           = :forma,
+                cartao_id                 = :cartao,
+                data_inicio               = :inicio,
+                data_fim                  = :fim,
+                observacoes               = :obs
             WHERE id = :id AND usuario_id = :uid
         ");
         $stmt->execute([
-            ':cat'    => $dados['categoria_id']  ?: null,
-            ':desc'   => trim($dados['descricao']),
-            ':valor'  => $dados['valor'],
-            ':dia'    => (int) $dados['dia_vencimento'],
-            ':inicio' => $dados['data_inicio'],
-            ':fim'    => $dados['data_fim']      ?: null,
-            ':obs'    => $dados['observacoes']   ?: null,
-            ':id'     => $id,
-            ':uid'    => $usuarioId,
+            ':cat'        => $dados['categoria_id']  ?: null,
+            ':desc'       => trim($dados['descricao']),
+            ':valor'      => $dados['valor'],
+            ':dia'        => (int) $dados['dia_vencimento'],
+            ':dia_ultimo' => (int) $dados['dia_vencimento_ultimo_dia'],
+            ':forma'      => $dados['forma_pagamento'],
+            ':cartao'     => $dados['forma_pagamento'] === 'credito' ? ($dados['cartao_id'] ?: null) : null,
+            ':inicio'     => $dados['data_inicio'],
+            ':fim'        => $dados['data_fim']      ?: null,
+            ':obs'        => $dados['observacoes']   ?: null,
+            ':id'         => $id,
+            ':uid'        => $usuarioId,
         ]);
         return $stmt->rowCount() > 0;
     }
@@ -208,25 +222,28 @@ class DespesaFixaModel extends BaseModel
 
         $stmtIns = $this->db->prepare("
             INSERT INTO despesas
-                (usuario_id, categoria_id, despesa_fixa_id,
+                (usuario_id, categoria_id, cartao_id, despesa_fixa_id,
                  descricao, valor, data, tipo, forma_pagamento)
             VALUES
-                (:uid, :cat, :df_id, :desc, :valor, :data, 'fixa', 'boleto')
+                (:uid, :cat, :cartao, :df_id, :desc, :valor, :data, 'fixa', :forma)
         ");
 
         $count = 0;
         foreach ($templates as $t) {
             $diasNoMes = (int) date('t', strtotime($primeiroDia));
-            $dia       = min((int) $t['dia_vencimento'], $diasNoMes);
+            $dia       = $t['dia_vencimento_ultimo_dia'] ? $diasNoMes : min((int) $t['dia_vencimento'], $diasNoMes);
             $data      = sprintf('%04d-%02d-%02d', $ano, $mes, $dia);
+            $forma     = $t['forma_pagamento'] ?: 'boleto';
 
             $stmtIns->execute([
-                ':uid'   => $usuarioId,
-                ':cat'   => $t['categoria_id'],
-                ':df_id' => $t['id'],
-                ':desc'  => $t['descricao'],
-                ':valor' => $t['valor'],
-                ':data'  => $data,
+                ':uid'    => $usuarioId,
+                ':cat'    => $t['categoria_id'],
+                ':cartao' => $forma === 'credito' ? $t['cartao_id'] : null,
+                ':df_id'  => $t['id'],
+                ':desc'   => $t['descricao'],
+                ':valor'  => $t['valor'],
+                ':data'   => $data,
+                ':forma'  => $forma,
             ]);
             $count++;
         }

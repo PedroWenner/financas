@@ -103,7 +103,12 @@ CREATE TABLE IF NOT EXISTS `despesas_fixas` (
     `categoria_id`   INT UNSIGNED      NULL,
     `descricao`      VARCHAR(200)  NOT NULL,
     `valor`          DECIMAL(12,2) NOT NULL,
-    `dia_vencimento` TINYINT       NOT NULL,
+    `dia_vencimento` TINYINT       NOT NULL COMMENT 'Dia do mês (1-31); ver dia_vencimento_ultimo_dia',
+    `dia_vencimento_ultimo_dia` TINYINT(1) NOT NULL DEFAULT 0
+                                  COMMENT 'Quando 1, ignora o número em dia_vencimento e usa sempre o último dia do mês',
+    `forma_pagamento` ENUM('dinheiro','debito','credito','pix','ted','boleto','outro')
+                                  NOT NULL DEFAULT 'boleto',
+    `cartao_id`      INT UNSIGNED      NULL,
     `data_inicio`    DATE          NOT NULL,
     `data_fim`       DATE              NULL,
     `ativo`          TINYINT(1)    NOT NULL DEFAULT 1,
@@ -114,7 +119,9 @@ CREATE TABLE IF NOT EXISTS `despesas_fixas` (
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_df_usuario`   FOREIGN KEY (`usuario_id`)   REFERENCES `usuarios`(`id`)   ON DELETE CASCADE,
     CONSTRAINT `fk_df_categoria` FOREIGN KEY (`categoria_id`) REFERENCES `categorias`(`id`) ON DELETE SET NULL,
-    INDEX `idx_df_usuario_ativo` (`usuario_id`, `ativo`)
+    CONSTRAINT `fk_df_cartao`    FOREIGN KEY (`cartao_id`)    REFERENCES `cartoes`(`id`)    ON DELETE SET NULL,
+    INDEX `idx_df_usuario_ativo` (`usuario_id`, `ativo`),
+    INDEX `idx_df_cartao` (`cartao_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ────────────────────────────────────────

@@ -99,6 +99,12 @@ function tipoReceitaLabel(string $tipo): string
     return $map[$tipo] ?? $tipo;
 }
 
+/** Formata o dia de vencimento de uma despesa fixa (considera a opção "último dia do mês"). */
+function diaVencimentoFmt(int $dia, bool $ultimoDia): string
+{
+    return $ultimoDia ? 'Último dia do mês' : 'Dia ' . $dia;
+}
+
 /** Trunca texto longo. */
 function truncate(string $texto, int $limite = 40): string
 {

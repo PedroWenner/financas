@@ -22,7 +22,8 @@
                 <tr>
                     <th>Descrição</th>
                     <th>Categoria</th>
-                    <th>Dia Venc.</th>
+                    <th>Vencimento</th>
+                    <th>Pagamento</th>
                     <th>Vigência</th>
                     <th>Status</th>
                     <th class="text-right">Valor Mensal</th>
@@ -46,7 +47,19 @@
                             </div>
                         <?php else: ?>—<?php endif; ?>
                     </td>
-                    <td>Dia <?= $f['dia_vencimento'] ?></td>
+                    <td><?= e(diaVencimentoFmt((int) $f['dia_vencimento'], (bool) $f['dia_vencimento_ultimo_dia'])) ?></td>
+                    <td>
+                        <?php
+                        $pagLabels = ['dinheiro'=>'Dinheiro','debito'=>'Débito','credito'=>'Crédito','pix'=>'PIX','ted'=>'TED','boleto'=>'Boleto','outro'=>'Outro'];
+                        echo e($pagLabels[$f['forma_pagamento']] ?? $f['forma_pagamento']);
+                        ?>
+                        <?php if ($f['forma_pagamento'] === 'credito' && $f['cartao_nome']): ?>
+                            <div class="fs-sm text-muted">💳 <?= e($f['cartao_nome']) ?></div>
+                            <?php if (!empty($f['proxima_data_debito'])): ?>
+                                <div class="fs-sm text-muted">Próx. débito: <?= dataFmt($f['proxima_data_debito']) ?></div>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </td>
                     <td class="fs-sm">
                         <?= dataFmt($f['data_inicio']) ?> →
                         <?= $f['data_fim'] ? dataFmt($f['data_fim']) : 'Sem fim' ?>

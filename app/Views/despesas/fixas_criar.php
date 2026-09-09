@@ -36,10 +36,14 @@
                 <div class="form-row cols-3">
                     <div class="form-group">
                         <label for="dia_vencimento">Dia de Vencimento *</label>
-                        <input type="number" id="dia_vencimento" name="dia_vencimento"
-                               class="form-control <?= !empty($errors['dia_vencimento']) ? 'is-invalid' : '' ?>"
-                               value="<?= e($old['dia_vencimento'] ?? '10') ?>" min="1" max="28" required>
-                        <div class="fs-sm text-muted mt-1">Dia do mês (1-28)</div>
+                        <?php $diaSelecionado = !empty($old['dia_vencimento_ultimo_dia']) ? 'ultimo' : (string) ($old['dia_vencimento'] ?? '10'); ?>
+                        <select id="dia_vencimento" name="dia_vencimento"
+                                class="form-control <?= !empty($errors['dia_vencimento']) ? 'is-invalid' : '' ?>" required>
+                            <?php for ($i = 1; $i <= 31; $i++): ?>
+                                <option value="<?= $i ?>" <?= $diaSelecionado === (string) $i ? 'selected' : '' ?>>Dia <?= $i ?></option>
+                            <?php endfor; ?>
+                            <option value="ultimo" <?= $diaSelecionado === 'ultimo' ? 'selected' : '' ?>>Último dia do mês</option>
+                        </select>
                         <?php if (!empty($errors['dia_vencimento'])): ?>
                             <div class="invalid-feedback"><?= e($errors['dia_vencimento']) ?></div>
                         <?php endif; ?>
@@ -61,6 +65,37 @@
                         <div class="fs-sm text-muted mt-1">Deixe em branco para sem fim</div>
                         <?php if (!empty($errors['data_fim'])): ?>
                             <div class="invalid-feedback"><?= e($errors['data_fim']) ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="form-row cols-2">
+                    <div class="form-group">
+                        <label for="forma_pagamento">Forma de Pagamento</label>
+                        <select id="forma_pagamento" name="forma_pagamento" class="form-control" onchange="toggleCartao(this.value)">
+                            <?php
+                            $formas = ['dinheiro'=>'Dinheiro','debito'=>'Débito','credito'=>'Crédito','pix'=>'PIX','ted'=>'TED','boleto'=>'Boleto','outro'=>'Outro'];
+                            foreach ($formas as $val => $label):
+                            ?>
+                                <option value="<?= $val ?>" <?= ($old['forma_pagamento'] ?? 'boleto') === $val ? 'selected' : '' ?>><?= $label ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group" id="grupo-cartao" style="<?= ($old['forma_pagamento'] ?? '') !== 'credito' ? 'display:none;' : '' ?>">
+                        <label for="cartao_id">Cartão de Crédito <?= !empty($errors['cartao_id']) ? '*' : '' ?></label>
+                        <select id="cartao_id" name="cartao_id" class="form-control <?= !empty($errors['cartao_id']) ? 'is-invalid' : '' ?>">
+                            <option value="">Selecione o cartão</option>
+                            <?php foreach ($cartoes as $c): ?>
+                                <option value="<?= $c['id'] ?>" <?= ($old['cartao_id'] ?? 0) == $c['id'] ? 'selected' : '' ?>><?= e($c['nome']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if (!empty($errors['cartao_id'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['cartao_id']) ?></div>
+                        <?php endif; ?>
+                        <?php if (empty($cartoes)): ?>
+                            <div class="fs-sm text-muted mt-1">
+                                Nenhum cartão cadastrado. <a href="/cartoes/criar">Cadastrar cartão</a>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -89,3 +124,15 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleCartao(forma) {
+    const grupo = document.getElementById('grupo-cartao');
+    if (grupo) grupo.style.display = forma === 'credito' ? '' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sel = document.getElementById('forma_pagamento');
+    if (sel) toggleCartao(sel.value);
+});
+</script>
