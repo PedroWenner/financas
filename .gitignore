@@ -22,6 +22,5 @@ Thumbs.db
 *.log
 logs/
 
-.claude
-.claude
+claude
 .claude/
