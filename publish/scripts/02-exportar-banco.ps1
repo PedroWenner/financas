@@ -16,7 +16,7 @@ param(
     [string]$Porta       = "3306",
     [string]$Banco       = "alcatech_financas",
     [string]$Usuario     = "root",
-    [string]$Senha       = "***REMOVED***",
+    [string]$Senha       = $env:DB_PASS,   # defina DB_PASS no ambiente ou passe -Senha
     [switch]$SomenteEstrutura = $false,
     [switch]$SomenteDados     = $false
 )

@@ -599,7 +599,7 @@ publish\
 │   ├── index.opcao-a.php          ← index.php para Opção A
 │   └── index.opcao-b.php          ← index.php para Opção B
 │
-└── GUIA_DEPLOY_HOSTINGER.md       ← Este arquivo
+(este guia fica em docs/DEPLOY_HOSTINGER.md)
 ```
 
 ---
